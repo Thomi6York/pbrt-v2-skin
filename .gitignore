@@ -42,4 +42,8 @@ Thumbs.db
 # Project specific
 /scenes/
 randomwalk-probes.txt
-*.bat
+#*.bat
+#Dont't want experimental data -too large use Drive
+/ExperimentalData/
+#Experiments
+
