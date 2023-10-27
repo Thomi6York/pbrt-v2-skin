@@ -38,10 +38,14 @@ WorldBegin
                            "color Kt" [0 0 0]
                            # each layer's depth and index of refraction; units are in nanometers
                            "skinlayer layers" [ 0.25e6 1.4 20e6 1.4]
-                           "float f_mel" 0.008
+                           #"float f_mel" 0.008
+                           #"float f_mel" 1
                            "float f_eu" 0.6
+                           #"float f_eu" 1
                            "float f_blood" 0.009
                            "float f_ohg" 0.8
+                           #"float f_blood" 1
+                           #"float f_ohg" 1
                            "texture bumpmap" "headbump"
                            "texture albedo" "lambertian-norm"
     Include "geometry/head.pbrt"
