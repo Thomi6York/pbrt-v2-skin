@@ -42,14 +42,10 @@ Thumbs.db
 # Project specific
 /scenes/
 randomwalk-probes.txt
-<<<<<<< HEAD
-#*.bat
 #Dont't want experimental data -too large use Drive
-/ExperimentalData/
-#Experiments
-=======
-#*.bat Want these for me
-#get rid of experiment data folder keep archive 
+#get rid of experiment data folder keep archive belt and braces
 Experiments/ 
->>>>>>> 3c4e33cce0c85061880e13c029e8e432707aa8a1
+/ExperimentalData/
+#*.bat Want these for me
+
 
