@@ -3,7 +3,7 @@ import pymeshlab as ml
 ms = ml.MeshSet()
 
 #note: the pymeshlab documentation allows you to directly convert menu name to the associated method for filter
-# note: do not assign varibale names to transformations. This will return a None object 
+#note: do not assign variable names to transformations. This will return a None object 
 
 
 #set where you are storing your meshes 
@@ -18,7 +18,6 @@ files = mesh_path+filename+extension
 #load mesh 
 ms.load_new_mesh(files)
 
-ms.compute_texcoord_by_function_per_wedge()
 
 ms.compute_matrix_from_scaling_or_normalization(
     axisx=1.0,
@@ -32,5 +31,11 @@ ms.compute_matrix_from_scaling_or_normalization(
     alllayers=False
 )
 
+ms.compute_texcoord_by_function_per_wedge()
 
-ms.save_current_mesh(mesh_path + "scaledNormMesh.ply")
+ms.save_current_mesh(mesh_path + "pyProcessTest.obj",
+                     save_wedge_texcoord = False,
+                     save_wedge_normal = False,
+                     save_vertex_coord  = True,
+# keeps vertex normals anyway, despite not being a setting for it
+                     )
