@@ -5,7 +5,7 @@ rem set our folder locations, use double slash for python
 set "OutRep=C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\Practical\\DJModel\\pbrt-v2-skin\\scenes\\geometry\\ProcDatasetHeads\\"
 set "InRep=C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\Experiments\\PilotDataSet\\"
 
-rem the .cpp for obj2pbrt is in src\tools for post-2015 vers of pbrt2. 
+rem the .cpp for obj2pbrt is in src\tools for post-2015 vers of pbrt2. pbrt3 onwards accept .ply directly
 rem ^^ I would build with a g++ compiler in VS Code and Mingw32 for convenience 
 
 rem create symbolic links to get around local search Or just use a copy solution here if you don't want admin privileges 

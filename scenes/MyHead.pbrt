@@ -1,0 +1,54 @@
+# sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
+Film "image" "integer xresolution" [1280] "integer yresolution" [720]
+LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
+Camera "perspective" "float fov" [30]
+
+Sampler "lowdiscrepancy" "integer pixelsamples" 4
+
+SurfaceIntegrator "multipolesubsurface"
+  "integer maxdepth" 5
+  "float maxerror" 0.1
+  "float minsampledistance" 0.0015
+
+WorldBegin
+
+  AttributeBegin
+    AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+    Translate -0.0859535 -4.92443 5.00725
+    Shape "sphere" "float radius" 0.2
+  AttributeEnd
+
+  AttributeBegin
+    AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+    Translate 2.88236 6.79042 -0.0884118
+    Shape "sphere" "float radius" 0.2
+  AttributeEnd
+
+  AttributeBegin
+    Translate 0 0 0.2
+    Rotate 90  1 0 0
+    Scale 10 10 10
+    Texture "headbump" "float" "imagemap" "string filename" "\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\Experiments\\PilotDataSet\\shader\\spec_texture.bmp"
+      "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
+    Texture "lambertian-norm" "color" "imagemap" "string filename" "\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\Experiments\\PilotDataSet\\shader\\diff_texture.bmp"
+      "string wrap" "clamp" "float gamma" 2.2 "float scale" 2
+    Material "layeredskin" "float roughness" 0.3
+                           "float nmperunit" 40e6 # nanometers per unit length in world space
+                           "color Kr" [1 1 1]
+                           "color Kt" [0 0 0]
+                           # each layer's depth and index of refraction; units are in nanometers
+                           "skinlayer layers" [ 0.25e6 1.4 20e6 1.4]
+                           #"float f_mel" 0.008
+                           #"float f_mel" 1
+                           "float f_eu" 0.6
+                           #"float f_eu" 1
+                           "float f_blood" 0.009
+                           "float f_ohg" 0.8
+                           #"float f_blood" 1
+                           #"float f_ohg" 1
+                           "texture bumpmap" "headbump"
+                           "texture albedo" "lambertian-norm"
+    Include "geometry/ProcDatasetHeads/S000mesh.pbrt"
+  AttributeEnd
+  
+WorldEnd
