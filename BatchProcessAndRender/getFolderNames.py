@@ -18,7 +18,7 @@ def getFolderNames(inPath,outPath):
     folder_name_list = folder_names
 
     # Save the folder names to a text file
-    with open(outPath+'/folder_names.txt', 'w') as file:
+    with open(outPath+'folder_names.txt', 'w') as file:
         file.write('\n'.join(folder_name_list))
     print("Written dir names to "+outPath)
 
@@ -36,3 +36,5 @@ if __name__ == "__main__":
         print(f"Error: {e}")
         parser.print_help()
         sys.exit(1)
+
+
