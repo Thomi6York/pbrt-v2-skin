@@ -41,7 +41,8 @@ Thumbs.db
 
 # Project specific
 #anything in scenes is too big
-/scenes/
+scenes/PilotDataSet/
+scenes/geometry/
 randomwalk-probes.txt
 #Dont't want experimental data -too large use Drive
 #get rid of experiment data folder keep archive belt and braces
