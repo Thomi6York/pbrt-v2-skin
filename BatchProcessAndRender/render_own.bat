@@ -1,1 +1,1 @@
-E:\pbrt-v2-skinPat\bin\pbrt.exe ..\scenes\geometry\ProcDatasetHeads\S000mesh.pbrt --outfile ..\results\test.exr
+E:\pbrt-v2-skinPat\bin\pbrt.exe ..\scenes\S000Scene.pbrt --outfile ..\results\lightSkin.exr

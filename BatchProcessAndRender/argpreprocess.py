@@ -7,6 +7,8 @@ def process_mesh(input_file, output_file):
     ms = ml.MeshSet()
     ms.load_new_mesh(input_file)
 
+    
+
     # Apply your desired mesh processing operations here
     ms.compute_matrix_from_scaling_or_normalization(
         axisx=1.0,
@@ -17,16 +19,20 @@ def process_mesh(input_file, output_file):
         customcenter=[0.0, 0.0, 0.0],
         unitflag=True,
         freeze=True,
-        alllayers=False
+        alllayers=True
     )
 
-    ms.compute_texcoord_by_function_per_wedge()
-
+    ms.apply_normal_normalization_per_vertex()
+    ms.compute_texcoord_transfer_wedge_to_vertex()
+    
     # Save the processed mesh
     ms.save_current_mesh(output_file,
                          save_wedge_texcoord=False,
                          save_wedge_normal=False,
-                         save_vertex_coord=True)
+                         save_vertex_coord=True,
+                         save_vertex_normal=True
+                         )
+    
     print("Mesh saved to " + output_file)
 
 if __name__ == "__main__":

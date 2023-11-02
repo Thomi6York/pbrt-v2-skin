@@ -51,3 +51,5 @@ Experiments/
 #*.bat Want these for me
 
 
+*.obj
+*.mtl

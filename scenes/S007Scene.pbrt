@@ -28,9 +28,9 @@ WorldBegin
     Translate 0 0 -.35
     Rotate 90  1 0 0
 	Scale 3 3 3
-    Texture "headbump" "float" "imagemap" "string filename" ".\\PilotDataSet\\S000\\shader\\spec_texture.tga"
+    Texture "headbump" "float" "imagemap" "string filename" ".\\PilotDataSet\\S007\\shader\\spec_texture.tga"
       "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
-    Texture "lambertian-norm" "color" "imagemap" "string filename" ".\\PilotDataSet\\S000\\shader\\diff_texture.tga"
+    Texture "lambertian-norm" "color" "imagemap" "string filename" ".\\PilotDataSet\\S007\\shader\\diff_texture.tga"
       "string wrap" "clamp" "float gamma" 2.2 "float scale" 2
     Material "layeredskin" "float roughness" 0.3
                            "float nmperunit" 40e6 # nanometers per unit length in world space
@@ -48,7 +48,7 @@ WorldBegin
                            #"float f_ohg" 0.5
                            "texture bumpmap" "headbump"
                            "texture albedo" "lambertian-norm"
-    Include "E:\\pbrt-v2-skinPat\\BatchProcessAndRender\\meshGUITest.pbrt"
+    Include "E:\\pbrt-v2-skinPat\\Scenes\\geometry\\processed\\S007Mesh.pbrt"
   AttributeEnd
   
 WorldEnd

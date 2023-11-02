@@ -38,17 +38,17 @@ WorldBegin
                            "color Kt" [0 0 0]
                            # each layer's depth and index of refraction; units are in nanometers
                            "skinlayer layers" [ 0.25e6 1.4 20e6 1.4]
-                           "float f_mel" 0.5
+                           "float f_mel" 0.005
                            #"float f_mel" 0.01
-                           "float f_eu" 0.5
+                           "float f_eu" 0.0005
                            #"float f_eu" 0.5
-                           "float f_blood" 0.5
-                           "float f_ohg" 0.5
+                           "float f_blood" 0.005
+                           "float f_ohg" 000.5
                            #"float f_blood" 0.01
                            #"float f_ohg" 0.5
                            "texture bumpmap" "headbump"
                            "texture albedo" "lambertian-norm"
-    Include "E:\\pbrt-v2-skinPat\\BatchProcessAndRender\\meshGUITest.pbrt"
+    Include "E:\\pbrt-v2-skinPat\\Scenes\\geometry\\processed\\S000mesh.pbrt"
   AttributeEnd
   
 WorldEnd
