@@ -1,41 +1,35 @@
 # sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
-Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" ["E:\\pbrt-v2-skinPat\\results\\tweak\\exp1.exr"]
+Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" ["E:\\pbrt-v2-skinPat\\results\\tweak\\Exp9.exr"]
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
 Sampler "lowdiscrepancy" "integer pixelsamples" 4
 
-SurfaceIntegrator "multipolesubsurface"
-  "integer maxdepth" 5
+SurfaceIntegrator "multipolesubsurface" #this is likely what controls specularity, and has an effect which overwrites texture input 
+  "integer maxdepth" 10 #changed from 5 to 2 -- no effect
   "float maxerror" 0.1
-  "float minsampledistance" 0.0015
+  "float minsampledistance" 0.0015 #beyond 0.0001 causes crash -- making big just makes it grainy 
 
 WorldBegin
 
   AttributeBegin
     AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
-    Translate -0.0859535 -4.92443 5.00725
-    Shape "sphere" "float radius" 0.2
+    Translate -0.0859535 -3 10.00725 #try and move camera up?? in Z axis and back in y 
+    Shape "sphere" "float radius" 0.3 # decrease light source radius from 0.2 
   AttributeEnd
-  
-  # believe this is the point light source so commented out
-  #AttributeBegin
-    #AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
-    #Translate 2.88236 6.79042 -0.0884118
-    #Shape "sphere" "float radius" 0.2 # increase area to address specularity
-  #AttributeEnd
+
 
   AttributeBegin
-    Translate 0 0 -.35
+    Translate 0 1 -.35 # move up a bit
     Rotate 90  1 0 0
-	Scale 3 3 3
-    Texture "headbump" "color" "imagemap" "string filename" ".\\PilotDataSet\\S007\\shader\\spec_texture.tga" #changed from float to color 
-      "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
-    Texture "lambertian-norm" "color" "imagemap" "string filename" ".\\PilotDataSet\\S007\\shader\\diff_texture.tga"
+	  Scale 3 3 3
+    #Texture "headbump" "color" "imagemap" "string filename" ".\\PilotDataSet\\S007\\shader\\spec_texture.tga" #changed from float to color 
+     # "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
+    Texture "lambertian-norm" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S007\\shader\\diff_texture.tga"
       "string wrap" "clamp" "float gamma" 2.2 "float scale" 2 #lambertian is just form of reflectance 
-    Material "layeredskin" "float roughness" 0.3
+    Material "layeredskin" "float roughness" 0.8 #changed from 0.1
                            "float nmperunit" 40e6 # nanometers per unit length in world space
                            "color Kr" [1 1 1]
-                           "color Kt" [0 0 0] # edit 
+                           "color Kt" [0 0 0] # edit did little changing from 1 to zero 
                            # each layer's depth and index of refraction; units are in nanometers
                            "skinlayer layers" [ 0.25e6 1.4 20e6 1.4]
                            "float f_mel" 0.5
@@ -46,7 +40,7 @@ WorldBegin
                            "float f_ohg" 0.5
                            #"float f_blood" 0.01
                            #"float f_ohg" 0.5
-                           "texture albedo" "headbump" # changed from bumpmap to albedo 
+                           "texture albedo" "headbump" # changed from bumpmap to albedo -- no effect
                            "texture albedo" "lambertian-norm"
     Include "E:\\pbrt-v2-skinPat\\Scenes\\geometry\\processed\\S007Mesh.pbrt"
   AttributeEnd
