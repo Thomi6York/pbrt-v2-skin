@@ -1,5 +1,6 @@
 # sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
 Film "image" "integer xresolution" [1280] "integer yresolution" [720]
+  "string filename" "countryRoadHeadSkyOnlyISILightNoBmpMap.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30]
 
@@ -12,24 +13,34 @@ SurfaceIntegrator "multipolesubsurface"
 
 WorldBegin
 
-  AttributeBegin
-    AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
-    Translate -0.0859535 -4.92443 5.00725
-    Shape "sphere" "float radius" 0.2
-  AttributeEnd
+  #AttributeBegin
+   # AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+    #Translate -0.0859535 -4.92443 5.00725
+    #Shape "sphere" "float radius" 0.2
+  #AttributeEnd
 
-  AttributeBegin
-    AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
-    Translate 2.88236 6.79042 -0.0884118
-    Shape "sphere" "float radius" 0.2
-  AttributeEnd
+  #AttributeBegin
+   # AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+    #Translate 2.88236 6.79042 -0.0884118
+    #Shape "sphere" "float radius" 0.2
+  #AttributeEnd
+
+AttributeBegin
+# lights
+    Scale -1 1 1
+    Rotate 90 -1 0 0
+    Rotate 90 1 0 0
+    Translate 30 30 30
+    LightSource "infinite"
+        "string mapname" [ "textures/small_rural_road_equiarea.exr" ]
+AttributeEnd
 
   AttributeBegin
     Translate 0 0 0.2
     Rotate 90  1 0 0
     Scale 10 10 10
-    Texture "headbump" "float" "imagemap" "string filename" "textures/bump-lowRes2.tga"
-      "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
+   # Texture "headbump" "float" "imagemap" "string filename" "textures/bump-lowRes2.tga"
+    #  "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
     Texture "lambertian-norm" "color" "imagemap" "string filename" "textures/lambertian-norm2.tga"
       "string wrap" "clamp" "float gamma" 2.2 "float scale" 2
     Material "layeredskin" "float roughness" 0.3

@@ -5,6 +5,7 @@
 # Build folders:
 src/objs
 src/bin
+scenes/pbrt-scenes/
 
 # Common renderer output file:
 *.exr
