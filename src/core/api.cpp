@@ -91,7 +91,6 @@
 #include "materials/translucent.h"
 #include "materials/uber.h"
 #include "materials/layeredskin.h"
-#include "materials/UVPass.h"
 #include "renderers/aggregatetest.h"
 #include "renderers/createprobes.h"
 #include "renderers/metropolis.h"
