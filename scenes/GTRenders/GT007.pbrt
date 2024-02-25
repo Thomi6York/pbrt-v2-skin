@@ -1,5 +1,8 @@
 # sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
-Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" ["E:\\pbrt-v2-skinPat\\results\\tweak\\Exp11Kr006Rough035CameraDownKT1.exr"]
+
+#here I use the results of exp11 with the set roughness from the paper and manually tweaked kr/kt values 
+
+Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" ["E:\\pbrt-v2-skinPat\\results\\GT\\GTPigmentsSubj007.exr"]
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
 Sampler "lowdiscrepancy" "integer pixelsamples" 4
@@ -31,13 +34,13 @@ WorldBegin
                            "color Kr" [0.05 0.05 0.05]
                            "color Kt" [1 1 1] # edit did little changing from 1 to zero 
                            # each layer's depth and index of refraction; units are in nanometers
-                           "skinlayer layers" [ 0.25e6 1.4 20e6 1.4]
-                           "float f_mel" 0.5
+                           "skinlayer layers" [ 0.25e6 1.4 20e6 1.4] # is this the thickness -- or above
+                           "float f_mel" 0.15829 #from skin_code tables 
                            #"float f_mel" 0.01
-                           "float f_eu" 0.5
+                           "float f_eu" 0.15829
                            #"float f_eu" 0.5
-                           "float f_blood" 0.5
-                           "float f_ohg" 0.5
+                           "float f_blood" 0.06739
+                           "float f_ohg" 0.06739
                            #"float f_blood" 0.01
                            #"float f_ohg" 0.5
                            "texture albedo" "headbump" # changed from bumpmap to albedo -- no effect
