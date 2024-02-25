@@ -106,15 +106,6 @@ void SamplerRendererTask::Run() {
                 else
                     Ls[i] = 0.f;
             }
-            else if (UVpass){ // hopefully we now have a basic shader that can hit an intersection and color r and g to the u and v values, if they are present 
-				if (rayWeight > 0.f && scene->Intersect(rays[i], &isects[i])){ // this assesses the ray intersection in the current scene 
-					float rgb[3] = {float(isects[i].dg.u), float(isects[i].dg.v), 0.f }; // this should take u and v at an intersection from the geometry and output it 
-					Ls[i] = Spectrum::FromRGB(rgb);
-                    // don't actually need normalization step because u and v are already normalized values lol Ls[i] /= 255.f;
-				}
-				else 
-					Ls[i] = 0.f;
-			}
             else {
             if (rayWeight > 0.f)
                 Ls[i] = rayWeight * renderer->Li(scene, rays[i], &samples[i], rng,
@@ -131,17 +122,20 @@ void SamplerRendererTask::Run() {
                 Ls[i] = Spectrum(0.f);
             }
             else if (Ls[i].y() < -1e-5) {
-                Error("Negative luminance value, %f, returned "
+                Error("Negative luminance value, %f, returned"
                       "for image sample.  Setting to black.", Ls[i].y());
                 Ls[i] = Spectrum(0.f);
             }
             else if (isinf(Ls[i].y())) {
-                Error("Infinite luminance value returned "
+                Error("Infinite luminance value returned"
                       "for image sample.  Setting to black.");
                 Ls[i] = Spectrum(0.f);
             }
             }
             PBRT_FINISHED_CAMERA_RAY_INTEGRATION(&rays[i], &samples[i], &Ls[i]);
+
+			// Free _MemoryArena_ memory from computing image sample values
+			arena.FreeAll();
         }
 
         // Report sample results to _Sampler_, add contributions to image
@@ -177,13 +171,12 @@ void SamplerRendererTask::Run() {
 // SamplerRenderer Method Definitions
 SamplerRenderer::SamplerRenderer(Sampler *s, Camera *c,
                                  SurfaceIntegrator *si, VolumeIntegrator *vi,
-                                 bool visIds, bool uvs) {
+                                 bool visIds) {
     sampler = s;
     camera = c;
     surfaceIntegrator = si;
     volumeIntegrator = vi;
     visualizeObjectIds = visIds;
-	UVpass = uvs; 
 }
 
 
@@ -219,7 +212,7 @@ void SamplerRenderer::Render(const Scene *scene) {
         renderTasks.push_back(new SamplerRendererTask(scene, this, camera,
                                                       reporter, sampler, sample, 
                                                       visualizeObjectIds, 
-                                                      nTasks-1-i, nTasks, UVpass));
+                                                      nTasks-1-i, nTasks));
     EnqueueTasks(renderTasks);
     WaitForAllTasks();
     for (uint32_t i = 0; i < renderTasks.size(); ++i)
