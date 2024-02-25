@@ -1,0 +1,52 @@
+# sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
+
+#here I use the results of exp11 with the set roughness from the paper and manually tweaked kr/kt values 
+
+Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" ["E:\\pbrt-v2-skinPat\\results\\GT\\GTPigmentsSubj005InverseRenderPigmentsTexture.exr"]
+LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
+Camera "perspective" "float fov" [30] 
+Sampler "lowdiscrepancy" "integer pixelsamples" 10 #changed to 30 to improve res and remove specular artifacts (low makes worse)
+
+SurfaceIntegrator "dipolesubsurface" 
+  "integer maxdepth" 10 #changed from 5 to 2 -- no effect
+  "float maxerror" 0.1
+  "float minsampledistance" 0.001 #beyond 0.0001 causes crash -- check this for crashes -- will disconnect remote 
+
+WorldBegin
+
+#over head lighting 
+AttributeBegin
+    AreaLightSource "area" "rgb L" [ 6500 6500 6500] "integer nsamples" [4] #attempt d65 illum8inant using max output
+    Translate -0.0859535 -4.92443 5.00725
+    Shape "sphere" "float radius" 0.2
+AttributeEnd
+
+AttributeBegin
+ #lights -- this is our isi naturalistic light source -- check for artifacts 
+    Scale -1 1 1
+    Rotate 90 -1 0 0
+    Rotate 90 1 0 0
+    Translate 30 30 30
+    LightSource "infinite"
+        "string mapname" [ "../textures/small_rural_road_equiarea.exr" ]
+        "integer	nsamples" [10] #crank this up to remove grainyness
+AttributeEnd
+ 
+  AttributeBegin
+    Translate 0 1 -.35 # move up a bit
+    Rotate 90  1 0 0
+	  Scale 3 3 3
+    Texture "lambertian-norm" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S005\\shader\\diff_texture.tga"
+      "string wrap" "clamp" "float gamma" 2.2 
+        "float scale" 2 #lambertian is just form of reflectance 
+    Texture "spec" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S005\\shader\\spec_texture.tga"
+      "string wrap" "clamp" "float gamma" 2.2 
+       "float scale" 2 #color and spectrum are actually the same :'(
+    Material "kdsubsurface"         
+                          "texture Kr" "spec"
+                          "texture Kd" "lambertian-norm"
+                          "float meanfreepath"  0.00095238  
+    Include "E:\\pbrt-v2-skinPat\\Scenes\\geometry\\processed\\S005Mesh.pbrt"
+  AttributeEnd 
+  
+WorldEnd

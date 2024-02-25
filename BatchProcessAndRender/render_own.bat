@@ -1,1 +1,1 @@
-E:\pbrt-v2-skinPat\bin\pbrt.exe ..\scenes\S000Scene.pbrt --outfile ..\results\lightSkin.exr
+E:\pbrt-v2-skinPat\bin\pbrt.exe ..\scenes\MyHead.pbrt --outfile ..\results\InverseGTTest.exr

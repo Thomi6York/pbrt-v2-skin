@@ -1,0 +1,71 @@
+
+    # PBRT scene file with parameters 0.186624 and 0.070304
+      
+    Film "image" "integer xresolution" [1280] "integer yresolution" [720]
+LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
+Camera "perspective" "float fov" [30] 
+Sampler "lowdiscrepancy" "integer pixelsamples" 4 #changed to 30 to improve res and remove specular artifacts (low makes worse)
+
+SurfaceIntegrator "multipolesubsurface" #this is likely what controls specularity, and has an effect which overwrites texture input 
+  "integer maxdepth" 5 #changed from 5 to 2 -- no effect
+  "float maxerror" 0.1
+  "float minsampledistance" 0.0015 #beyond 0.0001 causes crash -- making big just makes it grainy 
+
+WorldBegin
+
+#AttributeBegin
+ #   AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+  #  Translate -0.0859535 -3 6.00725 #try and move camera up?? in Z axis and back in y 
+   # Shape "sphere" "float radius" 0.2 # decrease light source radius from 0.2 
+#AttributeEnd
+
+#original light source
+
+#AttributeBegin
+#    AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+#    Translate -0.0859535 -4.92443 5.00725
+#    Shape "sphere" "float radius" 0.2
+#AttributeEnd
+
+AttributeBegin
+ #lights -- this is our isi naturalistic light source -- check for artifacts 
+    Scale -1 1 1
+    Rotate 90 -1 0 0
+    Rotate 90 1 0 0
+    Translate 30 30 30
+    LightSource "infinite"
+        "string mapname" [ "E:/pbrt-v2-skinPat/scenes/textures/small_rural_road_equiarea.exr" ]
+        "integer	nsamples" [5] #crank this up to remove grainyness
+AttributeEnd
+
+
+  AttributeBegin
+    Translate 0 1 -.35 # move up a bit
+    Rotate 90  1 0 0
+	  Scale 3 3 3
+    Texture "lambertian-norm" "color" "imagemap" "string filename" "E:/pbrt-v2-skinPat/scenes/PilotDataSet/S000/shader/diff_texture.tga"
+      "string wrap" "clamp" "float gamma" 2.2 
+        "float scale" 2 #lambertian is just form of reflectance 
+    Texture "spec" "color" "imagemap" "string filename" "E:/pbrt-v2-skinPat/scenes/PilotDataSet/S000/shader/spec_texture.tga"
+      "string wrap" "clamp" "float gamma" 2.2 
+       "float scale" 2 #color and spectrum are actually the same :'(
+    Material "layeredskin" "float roughness" 0.35 #0.35 is the paper value 
+                           "float nmperunit" 40e6 # nanometers per unit length in world space
+                           "color Kr" [0 0 0]
+                           "color Kt" [0 0 0] # edit did little changing from 1 to zero  -- this is translucency; can't be seen with a black background
+                           # each layer's depth and index of refraction; units are in nanometers
+                           "skinlayer layers" [ 0.25e6 1.4 20e6 1.4] # is this the thickness -- or above
+                           
+                           "float f_mel" 0.070304 #from skin_code tables 
+                           "float f_eu" 0.25
+               
+                           "float f_blood" 0.186624 # abs of whole blood -- where do I get this from 
+                           "float f_ohg" 0.75 #seems to be gamma ratio 
+                 
+                           #"texture albedo" "lambertian-norm"
+                           
+    Include "E:/pbrt-v2-skinPat/Scenes/geometry/processed/S000Mesh.pbrt"
+    AttributeEnd
+  
+WorldEnd
+    

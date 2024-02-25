@@ -57,7 +57,7 @@ AttributeEnd
                            "float f_ohg" 0.8
                            #"float f_blood" 1
                            #"float f_ohg" 1
-                           "texture bumpmap" "headbump"
+                          # "texture bumpmap" "headbump"
                            "texture albedo" "lambertian-norm"
     Include "geometry/head.pbrt"
   AttributeEnd
