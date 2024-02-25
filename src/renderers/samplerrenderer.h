@@ -46,7 +46,7 @@ class SamplerRenderer : public Renderer {
 public:
     // SamplerRenderer Public Methods
     SamplerRenderer(Sampler *s, Camera *c, SurfaceIntegrator *si,
-                    VolumeIntegrator *vi, bool visIds);
+                    VolumeIntegrator *vi, bool visIds, bool uvs);
     ~SamplerRenderer();
     void Render(const Scene *scene);
     Spectrum Li(const Scene *scene, const RayDifferential &ray,
@@ -57,6 +57,7 @@ public:
 private:
     // SamplerRenderer Private Data
     bool visualizeObjectIds;
+    bool UVpass;
     Sampler *sampler;
     Camera *camera;
     SurfaceIntegrator *surfaceIntegrator;
@@ -71,11 +72,11 @@ public:
     // SamplerRendererTask Public Methods
     SamplerRendererTask(const Scene *sc, Renderer *ren, Camera *c,
                         ProgressReporter &pr, Sampler *ms, Sample *sam, 
-                        bool visIds, int tn, int tc)
+                        bool visIds, int tn, int tc, bool uvs)
       : reporter(pr)
     {
         scene = sc; renderer = ren; camera = c; mainSampler = ms;
-        origSample = sam; visualizeObjectIds = visIds; taskNum = tn; taskCount = tc;
+        origSample = sam; visualizeObjectIds = visIds; taskNum = tn; taskCount = tc, UVpass=uvs;
     }
     void Run();
 private:
@@ -87,6 +88,7 @@ private:
     ProgressReporter &reporter;
     Sample *origSample;
     bool visualizeObjectIds;
+    bool UVpass;
     int taskNum, taskCount;
 };
 
