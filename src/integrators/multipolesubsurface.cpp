@@ -284,7 +284,8 @@ Spectrum MultipoleSubsurfaceIntegrator::Li(const Scene *scene, const Renderer *r
 		// because the term is already included in the profile
 		Spectrum Ft = bssrdf->IsMonteCarlo() ? Spectrum(1.f) :
 			(Spectrum(1.f) - bssrdf->rho(costheta));
-		L += ((INV_PI * Ft) * Mo * Pow(bssrdf->albedo(), 1.f - mix)).Clamp(0.f);
+		//L += ((INV_PI * Ft) * Mo * Pow(bssrdf->albedo(), 1.f - mix)).Clamp(0.f);
+		L += ((INV_PI * Ft) * Mo * Pow(bssrdf->albedo(), mix)).Clamp(0.f);
         PBRT_SUBSURFACE_FINISHED_OCTREE_LOOKUP();
     }
 	if (!showIrradiancePoints) {

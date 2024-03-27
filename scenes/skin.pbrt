@@ -1,5 +1,6 @@
-# sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
-Film "image" "integer xresolution" [1280] "integer yresolution" [720]
+# sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator 
+
+Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "NonInverseMixTest099NoEContribScale1.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30]
 
@@ -9,6 +10,7 @@ SurfaceIntegrator "multipolesubsurface"
   "integer maxdepth" 5
   "float maxerror" 0.1
   "float minsampledistance" 0.0015
+  "float mix" 0.999
 
 WorldBegin
 
@@ -31,7 +33,7 @@ WorldBegin
     Texture "headbump" "float" "imagemap" "string filename" "textures/bump-lowRes2.tga"
       "string wrap" "clamp" "float shift" -0.5 "float scale" 0.01
     Texture "lambertian-norm" "color" "imagemap" "string filename" "textures/lambertian-norm2.tga"
-      "string wrap" "clamp" "float gamma" 2.2 "float scale" 2
+      "string wrap" "clamp" "float gamma" 2.2 "float scale" 1
     Material "layeredskin" "float roughness" 0.3
                            "float nmperunit" 40e6 # nanometers per unit length in world space
                            "color Kr" [1 1 1]
@@ -42,7 +44,7 @@ WorldBegin
                            "float f_eu" 0.6
                            "float f_blood" 0.009
                            "float f_ohg" 0.8
-                           "texture bumpmap" "headbump"
+                           #"texture bumpmap" "headbump"
                            "texture albedo" "lambertian-norm"
     Include "geometry/head.pbrt"
   AttributeEnd
