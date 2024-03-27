@@ -1,6 +1,6 @@
 # sample pbrt file for rendering the head model using MultipoleSubsurfaceIntegrator
 Film "image" "integer xresolution" [1280] "integer yresolution" [720]
-  "string filename" "countryRoadHeadSkyOnlyISILightNoBmpMap.exr"
+  "string filename" "skinHighMix099.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30]
 
@@ -10,6 +10,7 @@ SurfaceIntegrator "multipolesubsurface"
   "integer maxdepth" 5
   "float maxerror" 0.1
   "float minsampledistance" 0.0015
+  "float mix" 0.99
 
 WorldBegin
 
@@ -48,6 +49,8 @@ AttributeEnd
                            "color Kr" [1 1 1]
                            "color Kt" [0 0 0]
                            # each layer's depth and index of refraction; units are in nanometers
+                           # epidermal thickness should be 0.04e6nm # this would compare to the second set
+                           # dermal thickness is probably ok at 20e6nm
                            "skinlayer layers" [ 0.25e6 1.4 20e6 1.4]
                            #"float f_mel" 0.008
                            #"float f_mel" 1

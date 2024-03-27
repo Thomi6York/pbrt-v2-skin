@@ -256,7 +256,6 @@
     <ClInclude Include="..\materials\subsurface.h" />
     <ClInclude Include="..\materials\translucent.h" />
     <ClInclude Include="..\materials\uber.h" />
-    <ClInclude Include="..\materials\UVPass.h" />
     <ClInclude Include="..\renderers\aggregatetest.h" />
     <ClInclude Include="..\renderers\batchmcprofile.h" />
     <ClInclude Include="..\renderers\createprobes.h" />
