@@ -5,6 +5,7 @@
 # Build folders:
 src/objs
 src/bin
+scenes/pbrt-scenes/
 
 # Common renderer output file:
 *.exr
@@ -40,6 +41,16 @@ desktop.ini
 Thumbs.db
 
 # Project specific
-/scenes/
+#anything in scenes is too big
+scenes/PilotDataSet/
+scenes/geometry/
 randomwalk-probes.txt
-*.bat
+#Dont't want experimental data -too large use Drive
+#get rid of experiment data folder keep archive belt and braces
+Experiments/ 
+/ExperimentalData/
+#*.bat Want these for me
+
+
+*.obj
+*.mtl
