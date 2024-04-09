@@ -91,7 +91,7 @@
 #include "materials/translucent.h"
 #include "materials/uber.h"
 #include "materials/layeredskin.h"
-#include "materials/UVPass.h"
+
 #include "renderers/aggregatetest.h"
 #include "renderers/createprobes.h"
 #include "renderers/metropolis.h"
@@ -126,7 +126,7 @@
 #include "textures/marble.h"
 #include "textures/mix.h"
 #include "textures/scale.h"
-#include "textures/uv.h"
+
 #include "textures/windy.h"
 #include "textures/wrinkled.h"
 #include "volumes/exponential.h"
@@ -436,8 +436,6 @@ Reference<Texture<float> > MakeFloatTexture(const string &name,
         tex = CreateBilerpFloatTexture(tex2world, tp);
     else if (name == "imagemap")
         tex = CreateImageFloatTexture(tex2world, tp);
-    else if (name == "uv")
-        tex = CreateUVFloatTexture(tex2world, tp);
     else if (name == "checkerboard")
         tex = CreateCheckerboardFloatTexture(tex2world, tp);
     else if (name == "dots")
@@ -470,8 +468,6 @@ Reference<Texture<Spectrum> > MakeSpectrumTexture(const string &name,
         tex = CreateBilerpSpectrumTexture(tex2world, tp);
     else if (name == "imagemap")
         tex = CreateImageSpectrumTexture(tex2world, tp);
-    else if (name == "uv")
-        tex = CreateUVSpectrumTexture(tex2world, tp);
     else if (name == "checkerboard")
         tex = CreateCheckerboardSpectrumTexture(tex2world, tp);
     else if (name == "dots")
