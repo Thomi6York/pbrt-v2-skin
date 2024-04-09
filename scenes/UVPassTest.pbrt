@@ -1,38 +1,22 @@
 
-    # PBRT scene file with parameters 0 and 0
-      
-    Film "image" "integer xresolution" [1280] "integer yresolution" [720]
+Film "image" "string filename" ".\\UVPasses\\HeadUVS000.exr"
+"integer xresolution" [1280] "integer yresolution" [720]
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
-Camera "perspective" "float fov" [30] 
-Sampler "lowdiscrepancy" "integer pixelsamples" 4 #changed to 30 to improve res and remove specular artifacts (low makes worse)
-
-SurfaceIntegrator "multipolesubsurface" #this is likely what controls specularity, and has an effect which overwrites texture input 
-  "integer maxdepth" 5 #changed from 5 to 2 -- no effect
-  "float maxerror" 0.1
-  "float minsampledistance" 0.0015 #beyond 0.0001 causes crash -- making big just makes it grainy 
-
+Camera "perspective" "float fov" [60]
+#Renderer "sampler" "bool visualizeobjectids" "true"	
+Renderer "sampler" "bool UVpass" "true"	
 WorldBegin
 
 AttributeBegin
- #lights -- this is our isi naturalistic light source -- check for artifacts 
-    Scale -1 1 1
-    Rotate 90 -1 0 0
-    Rotate 90 1 0 0
-    Translate 30 30 30
-    LightSource "infinite"
-        "string mapname" [ "E:/pbrt-v2-skinPat/scenes/textures/small_rural_road_equiarea.exr" ]
-        "integer	nsamples" [5] #crank this up to remove grainyness
+CoordSysTransform "camera"
+#LightSource "point" "color I" [ .7 .7 .7 ]
 AttributeEnd
 
-
 AttributeBegin
-  Translate 0 1 -.35 # move up a bit
-  Rotate 90  1 0 0
-  Scale 3 3 3
-  Material "UVPass" 
-                                              
-  Include "E:/pbrt-v2-skinPat/Scenes/geometry/processed/S000Mesh.pbrt"
+    Translate 0 1 -.35 # move up a bit
+    Rotate 90  1 0 0
+	  Scale 3 3 3
+Include "geometry\\processed\\S000mesh.pbrt"
 AttributeEnd
 
 WorldEnd
-    
