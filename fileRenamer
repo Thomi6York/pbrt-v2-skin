@@ -1,0 +1,28 @@
+import os
+import re
+
+# Define the constant values for the first two zeros
+constant_values = (7, 3) # this appears to be correct for the first run 
+
+# Define the directory containing the files
+directory = "/path/to/your/directory"
+
+# Define the pattern to match the filenames
+pattern = re.compile(r'scene_(\d+)_(\d+)\.exr')
+
+# Iterate over the files in the directory
+for filename in os.listdir(directory):
+    # Check if the file matches the pattern
+    match = pattern.match(filename)
+    if match:
+        # Extract the values from the original filename
+        value1, value2 = match.groups()
+
+        # Construct the new filename
+        new_filename = f"scene__{value1}_{value2}_{constant_values[0]}_{constant_values[1]}.exr"
+
+        # Rename the file
+        os.rename(os.path.join(directory, filename), os.path.join(directory, new_filename))
+        print(f"Renamed {filename} to {new_filename}")
+    else:
+        print(f"Skipping {filename} as it doesn't match the pattern")
