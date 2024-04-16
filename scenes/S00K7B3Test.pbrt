@@ -13,6 +13,7 @@ SurfaceIntegrator "multipolesubsurface" #this is likely what controls specularit
   "float mix" [0.01]
 WorldBegin
 
+#overhead light source
 #AttributeBegin
  #   AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
   #  Translate -0.0859535 -3 6.00725 #try and move camera up?? in Z axis and back in y 
@@ -34,7 +35,7 @@ AttributeBegin
     Rotate 90 1 0 0
     Translate 30 30 30
     LightSource "infinite"
-        "string mapname" [ "E:/pbrt-v2-skinPat/scenes/textures/small_rural_road_equiarea.exr" ]
+        "string mapname" [ "./textures/small_rural_road_equiarea.exr" ]
         "integer	nsamples" [5] #crank this up to remove grainyness
 AttributeEnd
 
@@ -46,18 +47,18 @@ AttributeEnd
 
   #Texture "lambertian-norm" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\textures\\B3K7OutIm.exr"
    #"string wrap" "clamp" "float gamma" 1 "float scale" 2
-   Texture "lambertian-norm" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\textures\\cailbratedTextureS000.exr"
+   Texture "lambertian-norm" "color" "imagemap" "string filename" ".\\textures\\cailbratedTextureS000.exr"
    "string wrap" "clamp" "float gamma" 1 "float scale" 1
    #Texture "lambertian-norm" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\textures\\doubleTex.exr"
     #"string wrap" "clamp" "float gamma" 1 "float scale" 2
    #Texture "lambertian-norm" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\diff_texture.tga"
    #"string wrap" "clamp" "float gamma" 2.2 "float scale" 2
-  Texture "spec" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\spec_texture.tga"
+  Texture "spec" "color" "imagemap" "string filename"  ".\\PilotDataSet\\S000\\shader\\spec_texture.tga"
    "string wrap" "clamp" "float gamma" 2.2 "float scale" 2
     Material "layeredskin" "float roughness" 0.35 #0.35 is the paper value 
                            "float nmperunit" 40e6 # nanometers per unit length in world space
-                           "color Kr" [0 0 0]
-                           #"texture Kr" "spec"
+                           #"color Kr" [0 0 0]
+                           "texture Kr" "spec"
                            "color Kt" [0 0 0] # edit did little changing from 1 to zero  -- this is translucency; can't be seen with a black background
                            # each layer's depth and index of refraction; units are in nanometers
                            "skinlayer layers" [ 0.09e6 1.4 20e6 1.4] # is this the thickness -- or above
@@ -74,7 +75,7 @@ AttributeEnd
                  
                            "texture albedo" "lambertian-norm"
                            
-    Include "E:/pbrt-v2-skinPat/Scenes/geometry/processed/S000Mesh.pbrt"
+    Include "./geometry/processed/S000Mesh.pbrt"
     AttributeEnd
   
 WorldEnd

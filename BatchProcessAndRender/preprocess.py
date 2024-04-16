@@ -1,5 +1,10 @@
 import pymeshlab as ml
+import subprocess
 
+conda_env = 'preprocess'
+command = f'conda activate {conda_env}'
+
+subprocess.run(command, shell=True)
 ms = ml.MeshSet()
 
 #note: the pymeshlab documentation allows you to directly convert menu name to the associated method for filter

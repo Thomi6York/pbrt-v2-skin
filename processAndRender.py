@@ -2,6 +2,7 @@ import subprocess
 import glob
 import os
 import glob
+import shlex
 
 #this script executes the texture modulation for the images using Matlab and then renders the scene using PBRT
 
@@ -9,10 +10,12 @@ import glob
 
 #parameters for the scene editor should be 3rd percentiles given by the matlab script 
 
+#dataset at: C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\Practical Rendering\Skin_code\data\ICT_3DRFE_mod
+
 # pbrt template goes here:
-def sceneEditor(OutPath,subjNum,param1,param2,param3,param4):
+def sceneEditor(TexPath,subjNum,param1,param2,param3,param4):
     template = f"""
-            Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "{OutPath}{subjNum}noSpec.exr"
+        Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "{TexPath}"
         LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
         Camera "perspective" "float fov" [30] 
         Sampler "lowdiscrepancy" "integer pixelsamples" 1 #changed to 1 for brute render speed`
@@ -23,6 +26,14 @@ def sceneEditor(OutPath,subjNum,param1,param2,param3,param4):
         "float minsampledistance" 0.0015 #beyond 0.0001 causes crash -- making big just makes it grainy 
 
         WorldBegin
+
+
+        #overhead light source
+        AttributeBegin
+            AreaLightSource "area" "color L" [ 3200 3200 3200 ] "integer nsamples" [4]
+            Translate -0.0859535 -3 6.00725 #try and move camera up?? in Z axis and back in y 
+            Shape "sphere" "float radius" 0.2 # decrease light source radius from 0.2 
+        AttributeEnd
 
         AttributeBegin
             #lights -- this is our isi naturalistic light source -- check for artifacts 
@@ -36,10 +47,10 @@ def sceneEditor(OutPath,subjNum,param1,param2,param3,param4):
         AttributeEnd
 
 
-           Texture "lambertian-norm" "color" "imagemap" "string filename" "..\\..\\scenes\\textures\\normTex\\normTex{subjNum}.exr"
+        Texture "lambertian-norm" "color" "imagemap" "string filename" "..\\..\\scenes\\textures\\normTex\\normTex{subjNum}.exr"
             "string wrap" "clamp" "float gamma" 1 "float scale" 1
-            Texture "spec" "color" "imagemap" "string filename"  "..\\..\\scenes\\PilotDataSet\\S000\\shader\\spec_texture.tga"
-            "string wrap" "clamp" "float gamma" 2.2 "float scale" 2
+        Texture "spec" "color" "imagemap" "string filename"  "..\\..\\scenes\\PilotDataSet\\{subjNum}\\shader\\spec_texture.tga"
+            "string wrap" "clamp" "float gamma" 2.2 "float scale" 1
 
         AttributeBegin
             Translate 0 1 -.35 # move up a bit
@@ -48,7 +59,8 @@ def sceneEditor(OutPath,subjNum,param1,param2,param3,param4):
             # lets try and run this wihtout loading the textures 
             Material "layeredskin" "float roughness" 0.35 #0.35 is the paper value 
                                 "float nmperunit" 40e6 # nanometers per unit length in world space
-                                "color Kr" [0 0 0]
+                                #"color Kr" [0 0 0] # no spec
+                                 
                                 "color Kt" [0 0 0] # edit did little changing from 1 to zero  -- this is translucency; can't be seen with a black background
                                 # each layer's depth and index of refraction; units are in nanometers
 
@@ -61,27 +73,44 @@ def sceneEditor(OutPath,subjNum,param1,param2,param3,param4):
                                 "float f_ohg" 0.75 #seems to be gamma ratio 
                         
                                 "texture albedo" "lambertian-norm"
+                                "texture Kr" "spec" #specular texture
+                                
                                 
             Include "../../scenes/geometry/processed/{subjNum}Mesh.pbrt"
-            AttributeEnd
+        AttributeEnd
         
         WorldEnd
-
-        
-
     """
     return template
 
 
 def main():
+
+    #give a prompt to ask about repeat the inverse render the subjects
+
+    reinverseRenderAll = input("Do you want to re-inverse render the subjects? (y/n): ")
+    if reinverseRenderAll == "y":
+        print("Re-inverse rendering all subjects.")
+    else:
+        print("Skipping re-inverse rendering.")
+    #write an options file to store the inverse render option
+    with open("options.txt", "w") as f:
+            f.write(f"{reinverseRenderAll}\n")
+
+    #print("This script will execute the texture modulation and rendering process for the subjects specified in the subjects.csv file.")
     #this contains the script and image generation code
+    #these are the subjects we are inverse rendering. If parameter maps are already rendered they will also be rendered
+    with open("subjects.csv", "w") as f:
+        for i in [0,3,5,7,22]:
+            f.write(f"{i}\n")
+        
 
     # check texture path exists and create if not
-    OutPath = ".\\scenes\\textures\\normTex\\"
-    file_list = os.listdir(OutPath)
+    TexPath = ".\\scenes\\textures\\normTex\\"
+    file_list = os.listdir(TexPath)
     print(file_list)
-    if not os.path.exists(OutPath):
-        os.makedirs(OutPath)
+    if not os.path.exists(TexPath):
+        os.makedirs(TexPath)
         print("Texture path created.")
     else:
         print("Texture path already exists.")
@@ -101,28 +130,36 @@ def main():
     else:
         print("Scene path already exists.")
 
-    # Define the MATLAB script file
-    matlab_script = "textureEditor.m"
 
     dataSetPath = ".\\scenes\\PilotDataSet\\"
 
+    
     # Run MATLAB script using subprocess
-    #subprocess.run(["matlab", "-batch", "run('{}')".format(matlab_script)])
+    matlab_script = "textureEditor.m"
+    subprocess.run(["matlab", "-batch", "run('{}')".format(matlab_script)])
 
 
     # Find the generated images by looking for a pattern (assuming they are saved as .exr files)
-    image_files = glob.glob(f"{OutPath}*.exr")
+    image_files = glob.glob(f"{TexPath}*.exr")
 
     # Write batch script to render all scenes using PBRT
     batch_script = "render_NormTex.bat"
 
+    #permutations list
+    
+    permutations = [[0, 0], [0, 0.5], [0.5, 0],[0.5, 0.5]]
+
     with open(batch_script, "w") as f:
-        image_files = glob.glob(f"{OutPath}*.exr")
+        image_files = glob.glob(f"{TexPath}*.exr")
 
         # Loop through the image files
         for image_file in image_files:
+
+            print(f"Processing image: {image_file}")
             image_name = os.path.basename(image_file).split(".")[0]  # Remove the file extension
             subjNum = image_name[7:]  # Extract the subject number from the image name
+            #add the extension back on
+            image_name = image_name + ".exr"
             # Read the parameter values from the cache text file
             cache_file = f"./results/pigmentMaps/cache_{subjNum}.txt"
             
@@ -134,12 +171,9 @@ def main():
                 param4 = float(lines[7].split(":")[1].strip()) #this is epth
                 param4 = param4 *0.001 #scale 
 
-            #check if specular texture is a tga or exr file
-            if os.path.exists(os.path.join(dataSetPath, f"//{subjNum}//shader//spec_texture.exr")):
-                print("spec texture is an exr file")
-            elif os.path.exists(os.path.join(dataSetPath, f"//{subjNum}//shader//spec_texture.tga")):
-                print("spec texture is a tga file")
-            elif os.path.exists(os.path.join(dataSetPath, f"//{subjNum}//shader//spec_texture.bmp")):
+            # Check if specular texture is a tga or exr file
+            spec_texture_path = os.path.join(dataSetPath, f"{subjNum}//shader//spec_texture.bmp")
+            if os.path.exists(spec_texture_path):
                 print("spec texture is a bmp file")
             else:
                 print("spec texture not found") 
@@ -149,14 +183,89 @@ def main():
             scene_file = os.path.join(scenePath, scene_name)
             print("writing scene file... to: ", scene_file)
 
+
+       
             with open(scene_file, "w") as scene_f:
                 # Write the scene contents
-                scene_f.write(sceneEditor(renderPath, subjNum, param1, param2, param3, param4).replace("\\", "\\\\"))
+                outFilePath = f"{renderPath}{subjNum}.exr"
+                scene_f.write(sceneEditor(outFilePath, subjNum, param1, param2, param3, param4).replace("\\", "\\\\"))
                 print(f"Scene file created for subject {subjNum}.")
 
             # Write the batch script command to render the scene using PBRT
-            f.write(f".\\bin\\pbrt.exe {scene_file}\n")
+            scene_command = f".\\bin\\pbrt.exe {scene_file}\n"
+            f.write(scene_command)
             print(f"Added render command for scene {subjNum} to batch script.")
+
+            # copy the scene file but comment out the specular texture and change the output path
+            scene_name =  f"NoSpec{subjNum}.pbrt"
+            scene_file = os.path.join(scenePath, scene_name)
+            with open(scene_file, "w") as scene_f:
+                #write non specular 
+                outFilePath = f"{renderPath}{subjNum}NoSpec.exr"
+                scene = sceneEditor(outFilePath, subjNum, param1, param2, param3, param4).replace("\\", "\\\\")
+                #comment out specular texture
+                scene.replace('"texture Kr" "spec" #specular texture', '#"texture Kr" "spec" #specular texture')
+                scene_f.write(scene)
+
+            # Write the batch script command to render the scene using PBRT
+            scene_command = f".\\bin\\pbrt.exe {scene_file}\n"
+
+            #loop through extreme pigment manipulations -- 4 permutations
+
+            #these are in the permutations subdirectory 
+            permsPath = ".\\scenes\\textures\\normTex\\permutations\\"
+
+            #get text file names 
+            permFiles = glob.glob(f"{permsPath}*.txt")
+
+            #loop through the permutations in the cache file's and generate scenes 
+            for index, permFile in enumerate(permFiles):
+                with open(permFile, "r") as cache_f:
+                    lines = cache_f.readlines()
+                    subjNum = lines[0].split(":")[1].strip() # subj ID 
+                    param1 = float(lines[1].split(":")[1].strip()) #mel
+                    param2 = float(lines[2].split(":")[1].strip()) #hem
+                    param3 = float(lines[7].split(":")[1].strip()) #beta
+                    param4 = float(lines[8].split(":")[1].strip()) #this is epth
+                    param4 = param4 *0.001 #scale 
+
+                outFilePath = f"{renderPath}{subjNum}_{param1}_{param2}_PermNo:_{index+1}_Manip.exr"
+
+                #write the scene file
+                scene_name = f"{subjNum}_{param1}_{param2}_PermNo:_{index+1}_Manip.pbrt"
+                scene_file = os.path.join(scenePath, scene_name)
+                with open(scene_file, "w") as scene_f:
+                    scene_f.write(sceneEditor(outFilePath, subjNum, param1, param2, param3, param4).replace("\\", "\\\\"))
+                    print(f"Perm Scene file {index} created for subject {subjNum}.")
+
+                # Append commands to batch script
+                scene_command = f".\\bin\\pbrt.exe {scene_file}\n"
+            
+                
+
+            '''
+            for j in range(4):
+                scene_name = f"{subjNum}_{permutations[j][0]}_{permutations[j][1]}Manip.pbrt"
+                scene_file = os.path.join(scenePath, scene_name)
+                
+                param1 = permutations[j][0]
+                param2 = permutations[j][1]
+
+                
+                # Write PBRT scene file
+                with open(scene_file, "w") as scene_f:
+                    # Write the scene contents
+                    outFilePath = f"{renderPath}{subjNum}_{param1}_{param2}Manip.exr"
+                    scene_f.write(sceneEditor(outFilePath, subjNum, param1, param2, param3, param4).replace("\\", "\\\\"))
+                    print(f"Perm Scene file {j} created for subject {subjNum}.")
+
+                # Write the batch script command to render the scene using PBRT
+                scene_command = f".\\bin\\pbrt.exe {scene_file}\n"
+                f.write(scene_command)
+                print(f"Added render command for scene {subjNum}, permutation {j} to batch script.")
+           '''
+                
+    
 
     print("Batch script created: render_all.bat")
 
