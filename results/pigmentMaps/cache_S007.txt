@@ -1,7 +1,7 @@
-Melanin 3rd percentile: 0.070304
-Hemoglobin 3rd percentile: 0.048668
-melInd: 27
-hemInd: 24
+Melanin 3rd percentile: 0.143748
+Hemoglobin 3rd percentile: 0.019652
+melInd: 34
+hemInd: 18
 betaInd: 2
 mean beta val: 2.500000e-01 
 epthInd: 1

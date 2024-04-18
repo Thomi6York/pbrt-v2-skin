@@ -48,8 +48,9 @@ subjects = subjects';
 
 %load repeat options txt file
 repeat = fileread(strcat(currentDir,'options.txt'));
-repeat = repeat(1); 
+repeat = strcmpi(strtrim(repeat), 'true');
 
+%%
 for subj = subjects
     subj_id_string = ['S' num2str(subj, '%03d')];
 
@@ -64,10 +65,10 @@ for subj = subjects
     face_mask = imread(strcat(path, subj_id_string, '_E00_Mask.bmp')); 
     face_mask = face_mask(:,:,2)>0;
     
-
+%%
 
     %check for pig maps
-    if ~exist(strcat(pigPath, subj_id_string, '_newMaps.mat'), 'file')  || repeat == 'y'
+    if ~exist(strcat(pigPath, subj_id_string, '_newMaps.mat'), 'file')  || repeat
         
         disp(['No maps found for ' subj_id_string])
         disp('Inverse rendering in progress...');
@@ -83,6 +84,7 @@ for subj = subjects
             Input_Img = imread([path '\diff_texture.bmp']); 
             disp('Input diff texture loaded ')
             figure;imshow(Input_Img);title('Original Diffuse texture')
+            figure;imshow(Out_Img);title('Inverse rendered Img');
         end
         
     end
@@ -135,7 +137,10 @@ for subj = subjects
         figure; imshow(normIm);title('transformed for rendering');
     end
     
-    exrwrite(normIm,strcat(texPath, 'normTex', subj_id_string, '.exr')); %write to the rendering directory 
+    exrwrite(normIm,strcat(texPath, 'normTexISONorm', subj_id_string, '.exr')); %write to the rendering directory 
+    if debug
+        disp(strcat('Saving texture to ', texPath, 'normTexISONorm', subj_id_string, '.exr'));
+    end
     
     % Write cache file
     cacheFile = fullfile(pigPath, ['cache_' subj_id_string '.txt']);
@@ -182,22 +187,24 @@ function distance_94=DeltaE_94_pix_to_Matrix1D(Lab1, M_Lab2)
 end
 
 function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_render(subj, subj_id_string, path, pigPath, isoValues, LUTs, LUTs_Lab, light_spectrum, CMFs, Mel_sampling, Hem_sampling, Epth_sampling, Beta_sampling, subsampling_factor_img, face_mask, debug)
-
+            tic
             %load image 
             Input_Img = imread([path '\diff_texture.bmp']); 
             Input_Img = (double(Input_Img(1:subsampling_factor_img:end,1:subsampling_factor_img:end,:))./255).^2.2; % subsample the image and convert to linear space
-    
+            true_Input = Input_Img;
             %normalise ISOs
             ISO = isoValues(subj +1,2);
             ISO = table2array(ISO);
-    
-            Input_Img = (Input_Img.*100)/ISO;
+            ISOref = 250; %min ISO from table 
+
+            %normalise 
+            Input_Img = (Input_Img.*ISOref)/ISO;
           
             face_mask = face_mask(1:subsampling_factor_img:end,1:subsampling_factor_img:end); %subsample mask
     
             if debug
                 disp('Displaying unedited input image');
-                figure; imshow(lin2rgb(Input_Img)); title('unedited input im (iso normalised)');
+                figure; subplot(121); imshow(lin2rgb(Input_Img)); title('unedited input im (iso normalised)'); subplot(122); imshow(lin2rgb(true_Input)); title('true Input');
             end
             %% standard image loading 
             LUTs_Dims = size(LUTs);
@@ -250,9 +257,10 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_render(subj, subj
                         Out_Hem(maskCorrespondence(i)) = Hem_sampling(Best_N);
                         Out_Epth(maskCorrespondence(i)) = Epth_sampling(Best_K);
                         Out_Beta(maskCorrespondence(i)) =  Beta_sampling(beta_eum);
-    
-                    progress = i / length(vecIm) * 100;
-                    waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', subj_id_string, progress));
+                        progress = i / length(vecIm) * 100;
+                    if mod(progress,0.1) == 0 %only every whole perc to speed up
+                        waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', subj_id_string, progress));
+                    end 
             end
             
             close(progressBar);
@@ -277,6 +285,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_render(subj, subj
                 figure;    imagesc(Out_Beta); axis 'image'; title('Beta ratio mix map');
             end
     
-            save(strcat(pigPath, subj_id_string, '_newMaps.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
+            save(strcat(pigPath, subj_id_string, '_newMapsISONorm.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
             disp('Maps saved');
+            toc 
 end
