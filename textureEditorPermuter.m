@@ -43,7 +43,7 @@ addpath(permPath);
 
 subsampling_factor_img = 1; % subsampling factor for the image for debugging purposes
 
-debug = 0; % Set debug to 1 to enable debug statements
+debug = 1; % Set debug to 1 to enable debug statements
 
 % normalise the textures
 %load the csv with ISO values
@@ -60,7 +60,7 @@ repeat = repeat(1);
 
 fileNameHandleIn = 'ISONorm';
 
-for subj = subjects
+for subj = 5 %subjects
     subj_id_string = ['S' num2str(subj, '%03d')];
 
     load('.\data\inverse_rendering_data.mat')
@@ -158,7 +158,7 @@ for subj = subjects
 
     %loop through the permutations
     count = 0;
-    for i = 1:length(perms)
+    for i = 4 %1:length(perms)
         count = count + 1;
         
         dims = size(Out_Hem);

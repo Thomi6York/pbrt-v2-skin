@@ -19,6 +19,36 @@ addpath(genpath('.\data\'));
 load(".\data\LUTs_luxeon_CIEcmfwithbeta.mat");
 load LUTs_Lab; % get the lab version to avoid computing on the fly
 
+%read the paths from the txt file
+pathpath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\pathInfo.txt";
+addpath(pathpath);
+
+if exist(pathpath, 'file')
+    disp('path file found')
+else 
+    disp('cannot find paths')
+end
+
+
+pathInfo = readcell(pathpath);
+% isolate the path from the brackets
+TexPath = char(extractBetween(pathInfo{1}, '"', '"'));
+TexPath = TexPath(2,:);
+renderPath = char(extractBetween(pathInfo{2}, '"', '"'));
+scenePath = char(extractBetween(pathInfo{3}, '"', '"'));
+dataSetPath = char(extractBetween(pathInfo{4}, '"', '"'));
+cachePath = char(extractBetween(pathInfo{5}, '"', '"'));
+meshPath = char(extractBetween(pathInfo{6}, '"', '"'));
+pigPath = char(extractBetween(pathInfo{7}, '"', '"'));
+
+
+addpath(renderPath);
+addpath(scenePath);
+addpath(dataSetPath);
+addpath(meshPath);
+addpath(pigPath);
+
+%{
 %set pigpath and make it if it doesn't exist
 pigPath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\pigmentMaps\";
 if ~exist(pigPath, 'dir')
@@ -27,11 +57,26 @@ end
 addpath(pigPath);
 
 %set texpath and make it if it doesn't exist
-texPath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\textures\normTex\";
-if ~exist(texPath, 'dir')
-    mkdir(texPath);
+TexPath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\textures\normTex\";
+if ~exist(TexPath, 'dir')
+    mkdir(TexPath);
 end
-addpath(texPath);
+addpath(TexPath);
+
+% create a cache directory
+cachePath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\cache\";
+if ~exist(cachePath, 'dir')
+    mkdir(cachePath);
+end
+addpath(cachePath);
+
+%save paths to a .txt file
+fileID = fopen(strcat(currentDir,'paths.txt'),'w');
+fprintf(fileID,'chromPath: %s\n', chromPath);
+fprintf(fileID,'pigPath: %s\n', pigPath);
+fprintf(fileID,'TexPath: %s\n', TexPath);
+%}
+
 
 subsampling_factor_img = 1; % subsampling factor for the image for debugging purposes
 
@@ -48,7 +93,9 @@ subjects = subjects';
 
 %load repeat options txt file
 repeat = fileread(strcat(currentDir,'options.txt'));
-repeat = strcmpi(strtrim(repeat), 'true');
+
+repeat = all('True' == repeat(1:4)); 
+
 
 %%
 for subj = subjects
@@ -66,9 +113,9 @@ for subj = subjects
     face_mask = face_mask(:,:,2)>0;
     
 %%
-
+mapName = strcat(pigPath, subj_id_string, '_newMapsISONorm.mat');
     %check for pig maps
-    if ~exist(strcat(pigPath, subj_id_string, '_newMaps.mat'), 'file')  || repeat
+    if ~exist(mapName, 'file')  || repeat
         
         disp(['No maps found for ' subj_id_string])
         disp('Inverse rendering in progress...');
@@ -78,7 +125,7 @@ for subj = subjects
 
         disp('Loading pre-existing maps');
 
-        load(strcat(pigPath, subj_id_string, '_newMaps.mat'));
+        load(mapName);
         disp('Old Maps loaded');
         if debug
             Input_Img = imread([path '\diff_texture.bmp']); 
@@ -137,14 +184,18 @@ for subj = subjects
         figure; imshow(normIm);title('transformed for rendering');
     end
     
-    exrwrite(normIm,strcat(texPath, 'normTexISONorm', subj_id_string, '.exr')); %write to the rendering directory 
+    exrwrite(normIm,strcat(TexPath, 'normTexISONorm', subj_id_string, '.exr')); %write to the rendering directory 
     if debug
-        disp(strcat('Saving texture to ', texPath, 'normTexISONorm', subj_id_string, '.exr'));
+        disp(strcat('Saving texture to ', TexPath, 'normTexISONorm', subj_id_string, '.exr'));
     end
+
+    % give it a blank permID
+    count = [];
     
     % Write cache file
-    cacheFile = fullfile(pigPath, ['cache_' subj_id_string '.txt']);
+    cacheFile = fullfile(cachePath, ['cache_' subj_id_string '.txt']);
     fid = fopen(cacheFile, 'w');
+    fprintf(fid, 'Subject: %s\n', subj_id_string);
     fprintf(fid, 'Melanin 3rd percentile: %f\n', melPerc);
     fprintf(fid, 'Hemoglobin 3rd percentile: %f\n', hemPerc);
     fprintf(fid, 'melInd: %d\n', melInd);
@@ -153,6 +204,7 @@ for subj = subjects
     fprintf(fid, 'mean beta val: %d \n', Beta_sampling(betaInd));
     fprintf(fid, 'epthInd: %d\n', epthInd);
     fprintf(fid, 'mean epth val: %d \n', Epth_sampling(epthInd));
+    fprintf(fid, 'permID: %d \n', count);
     fclose(fid);
     disp(['Wrote cache file to ' cacheFile]);
 end 
@@ -258,7 +310,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_render(subj, subj
                         Out_Epth(maskCorrespondence(i)) = Epth_sampling(Best_K);
                         Out_Beta(maskCorrespondence(i)) =  Beta_sampling(beta_eum);
                         progress = i / length(vecIm) * 100;
-                    if mod(progress,0.1) == 0 %only every whole perc to speed up
+                    if mod(round(progress,2),0.1) == 0 %only every whole perc to speed up
                         waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', subj_id_string, progress));
                     end 
             end
