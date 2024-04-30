@@ -55,8 +55,11 @@ subjects = subjects';
 
 
 %load repeat options txt file
-repeat = fileread(strcat(currentDir,'options.txt'));
-repeat = repeat(1); 
+%load repeat options txt file
+options = fileread(strcat(currentDir,'options.txt'));
+
+repeat = all('True' == options(1:4));
+fixBandK = all('True' == options(7:10)); 
 
 fileNameHandleIn = 'ISONorm';
 
@@ -183,7 +186,7 @@ for subj = 5 %subjects
         %get the index of the nearest value in the sampling array
         [~,melInd] = min(abs(Out_Mel2 - Mel_sampling));
         [~,hemInd] = min(abs(Out_Hem2 - Hem_sampling));
-        [~,betaInd] = min(abs(Out_Beta-Beta_sampling),[],2); 
+        [~,betaInd] = min(abs(Out_Beta-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
         [~,epthInd] = min(abs(Out_Epth-Epth_sampling),[],2);
 
         % calibrate the maps to the sampling values 
@@ -381,6 +384,17 @@ function normIm= texNormalize(count, Out_Img, Out_Beta,Out_Epth,Out_Mel2,Out_Hem
     hemInd = find(hemPerc == Hem_sampling);
     [~,betaInd] = min(abs(mean(Out_Beta,'all')-Beta_sampling)); %set this to the mean 
     [~,epthInd] = min(abs(mean(Out_Epth,'all')-Epth_sampling)); %set this to the mean
+
+    % fix values if we want this to be fixed
+    if fixBandK = 1
+        betaInd(:,:) = 3;
+        if epthInd < 8
+            epthInd(:,:) = 8;
+        elseif epthInd > 18
+            epthInd(:,:) = 18;
+        end
+
+    end
 
     refl = LUTs(betaInd,epthInd,melInd,hemInd,:); 
     refl = reshape(refl,1,3);

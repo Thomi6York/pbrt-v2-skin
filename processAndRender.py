@@ -14,27 +14,38 @@ from rendFunctions import sceneEditor, createPaths, readCacheFile, assetCheck, g
 #dataset at: C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\Practical Rendering\Skin_code\data\ICT_3DRFE_mod
 
 #set options for the script
-batchRenderGT = True #will render all the scenes in the batch script
-reinverseRenderAll = False
+batchRenderGT = True #will render all the GT scenes in the batch script
+reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
 rewriteCachfiles = False
 writeSceneFile = True
 permuteScene = False
 generatePermTextures = False
 batchRenderPerms = False    
-specular = False
-templateID = 2; # 1 is full file, 2 is without overhead lighting 
+specular = True
+LightingCase = 1; # 1 is full file, 2 is without overhead lighting 
+fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.10 and 0.20mm
+
+pathHandle = 'fixBandEnd\\' #customise this for output name
+fileHandle = 'SpecAndSmallerEpthValandModalBetaOverHead' #customise this for file details in the name, ensure no overwriting at the least 
 
 #set paths
 #get absolute path for current file to avoid cofusion with relative paths
 currentPath = os.path.abspath(__file__)
 
-TexPath = ".\\scenes\\textures\\normTex\\" #make sure TexPath is set to the correct path in matlab and here
-renderPath = ".\\results\\groundTruth\\noOverhead\\"
-scenePath = ".\\scenes\\normTexScenes\\noOverhead\\"
+TexPath = ".\\scenes\\textures\\normTex\\"
+renderPath = ".\\results\\groundTruth\\Overhead\\"
+scenePath = ".\\scenes\\normTexScenes\\"
 dataSetPath = ".\\scenes\\PilotDataSet\\"
 cachePath = ".\\scenes\\textures\\normTex\\cache\\"
 meshPath = "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\scenes\\geometry\\processed\\" 
 pigPath = "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\results\\pigmentMaps\\"
+
+# append handle to relevant paths for new directory
+TexPath = os.path.join(TexPath,pathHandle )
+renderPath = os.path.join(renderPath,pathHandle )    
+scenePath = os.path.join(scenePath,pathHandle )
+cachePath = os.path.join(cachePath,pathHandle )
+pigPath = os.path.join(pigPath,pathHandle )
 
 #add current path to paths
 TexPath = os.path.join(os.path.dirname(currentPath),TexPath)
@@ -44,7 +55,7 @@ dataSetPath = os.path.join(os.path.dirname(currentPath),dataSetPath)
 cachePath = os.path.join(os.path.dirname(currentPath),cachePath)
 
 subjects = 0; #subjects to render -- these are the subjects we are inverse rendering
-#subjects = [0,3,7,22]; 
+#subjects = [0,3,5,7,22]; 
 #subjects =5; 
 
 #add the options to an object
@@ -58,7 +69,10 @@ options = {
     "generatePermTextures": generatePermTextures,
     "batchRenderPerms": batchRenderPerms,
     "specular": specular,
-    "handle": 'noOverheadLight'#customise this for output name
+    "pathHandle": pathHandle,#customise this for output name
+    "fileHandle": fileHandle, #customise this for file details
+    "fixBandEnd": fixBandEnd
+    
 }
 
 #add path to object
@@ -69,7 +83,9 @@ pathInfo = {
     "dataSetPath": dataSetPath,
     "cachePath": cachePath,
     "meshPath": meshPath,
-    "pigPath": pigPath
+    "pigPath": pigPath,
+    "fileHandle": fileHandle,
+    "pathHandle": pathHandle,
 }
 
 
@@ -84,7 +100,7 @@ def main(pathInfo,options):
         print("Skipping re-inverse rendering.")
     #write an options file to store the inverse render option
     with open("options.txt", "w") as f:
-            f.write(f"{str(reinverseRenderAll)}\n")
+            f.write(f"{str(int(reinverseRenderAll))}{str(int(fixBandEnd))}\n")
     
     #handles creating paths        
     createPaths(pathInfo); 
@@ -92,7 +108,7 @@ def main(pathInfo,options):
     # Run MATLAB script using subprocess
     matlab_script = "textureEditor.m"
 
-    if reinverseRenderAll == True or options["reWriteCachfiles"] == True:
+    if reinverseRenderAll == True or options["reWriteCachfiles"] == True or options["fixBandEnd"] == True:
         print("Running MATLAB script to generate texture maps/write cache files.")
         subprocess.run(["matlab", "-batch", "run('{}')".format(matlab_script)])
 
@@ -119,12 +135,13 @@ def main(pathInfo,options):
                 subjNum = params["subjNum"]
                 permID = params["permID"]
                 
+                scene_name = f"{subjNum}.pbrt"
                 #check permID is empty and we want to render the subject
                 if permID == "" and subjNum in subjects:
 
                     #process the file and write a basic scene file
-                     texture = processFiles(pathInfo, cache,batch_script,templateID,subjects, overwriteALL)
-
+                     texture, overwriteALL, scene_name = processFiles(pathInfo, cache,batch_script,LightingCase,subjects, overwriteALL, fileHandle)
+                     scene_file = os.path.join(scenePath, scene_name)
                 if options["specular"] == True:
                     # copy the scene file but comment out the specular texture and change the output path
                     scene_name =  f"NoSpec{subjNum}.pbrt"
@@ -140,9 +157,9 @@ def main(pathInfo,options):
                         scene.replace('"texture Kr" "spec" #specular texture', '#"texture Kr" "spec" #specular texture')
                         scene_f.write(scene)
 
-                    # Write the batch script command to render the scene using PBRT
-                    scene_command = f".\\bin\\pbrt.exe {scene_file}\n"
-                    f.write(scene_command)
+                # Write the batch script command to render the scene using PBRT
+                scene_command = f".\\bin\\pbrt.exe \"{scene_file}\"\n"
+                f.write(scene_command)
 
         #loop through extreme pigment manipulations -- 4 permutations
         if permuteScene == True:
@@ -178,7 +195,7 @@ def main(pathInfo,options):
                         if subjNum in subjects and permID != "":
                             print(f"Processing permutation {permID} for subject {subjNum}.")
                             #process the file
-                            texture = processFiles(pathInfo, cache, batch_script,templateID,subjects,handle)
+                            texture = processFiles(pathInfo, cache, batch_script,LightingCase,subjects, overwriteALL,fileHandle)
             
     print("Batch script created: render_all.bat")
 
