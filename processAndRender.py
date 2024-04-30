@@ -58,6 +58,9 @@ subjects = 0; #subjects to render -- these are the subjects we are inverse rende
 #subjects = [0,3,5,7,22]; 
 #subjects =5; 
 
+perms = 'all' #set to 'all' to render all permutations, otherwise select permID's to render
+#perms ['1','2','3','4'] #set to 'all' to render all permutations, otherwise select permID's to render
+
 #add the options to an object
 options = {
     "batchRenderGT": batchRenderGT,
@@ -71,7 +74,8 @@ options = {
     "specular": specular,
     "pathHandle": pathHandle,#customise this for output name
     "fileHandle": fileHandle, #customise this for file details
-    "fixBandEnd": fixBandEnd
+    "fixBandEnd": fixBandEnd,
+    "perms": perms #set to 'all' to render all permutations, otherwise select permID's to render
     
 }
 
@@ -189,13 +193,21 @@ def main(pathInfo,options):
                         #get subject and perm ID by reading cache file
                         params = readCacheFile(cache,subjects)
                         subjNum = params["subjNum"]
-                        permID = params["permID"]
+                        permID = params["permID"]                       
+                        perms = options["perms"]
                         
                         #only process the file if it matches the current subject and permID is not empty
-                        if subjNum in subjects and permID != "":
-                            print(f"Processing permutation {permID} for subject {subjNum}.")
-                            #process the file
-                            texture = processFiles(pathInfo, cache, batch_script,LightingCase,subjects, overwriteALL,fileHandle)
+                        if perms == 'all':
+                            if subjNum in subjects and permID != "":
+                                print(f"Processing permutation {permID} for subject {subjNum}.")
+                                #process the file
+                                texture = processFiles(pathInfo, cache, batch_script,LightingCase,subjects, overwriteALL,fileHandle)
+                            else: #if we only want to render the specific permutations
+                                if subjNum in subjects and permID in perms:
+                                    print(f"Processing permutation {permID} for subject {subjNum}.")
+                                    #process the file
+                                    texture = processFiles(pathInfo, cache, batch_script,LightingCase,subjects, overwriteALL,fileHandle)
+                                    
             
     print("Batch script created: render_all.bat")
 
