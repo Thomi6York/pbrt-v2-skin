@@ -56,7 +56,8 @@ Experiments/
 /ExperimentalData/
 #*.bat Want these for me
 
-
+# shared folder
+sharedFolder/
 
 
 *.obj
@@ -385,7 +386,8 @@ bison-1.25/bison-1.25/configure.bat
 render_scenes.bat
 output_scenes/render_all.bat
 output_scenes/render_all.bat
-/scenes/normTexScenes
-/scenes/textures/normTex
+
+/scenes/
+/scenes/textures/
 /output_scenesFixedEpiandB
 /.tmp.driveupload

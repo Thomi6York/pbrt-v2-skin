@@ -8,7 +8,7 @@ import sys
 
 
 # pbrt template goes here:
-def sceneEditor(params,pathInfo,templateID):
+def sceneEditor(params,pathInfo,LightingCase):
     
     #path info is a dictionary containing the path to the texture and the path to the scene file
 
@@ -29,7 +29,7 @@ def sceneEditor(params,pathInfo,templateID):
 
     #set the template ID
 
-    if templateID == 1:
+    if LightingCase == 1:
     #write scene
         template = f"""
             Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "{outFilePath}"
@@ -99,7 +99,7 @@ def sceneEditor(params,pathInfo,templateID):
             WorldEnd
         """
 
-    elif templateID == 2:
+    elif LightingCase == 2:
         #write scene with no specular light source 
         template = f"""
             Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "{outFilePath}"
@@ -245,7 +245,7 @@ def  getSubjects(options):
 
     return subjects
 
-def processFiles(pathInfo, cacheFile,batch_script,templateID,subjects,overwriteALL=False,handle = None):
+def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,overwriteALL=False,handle = None):
     #check if we want to overwrite all files
     #set default handle to empty string
     if handle == None:
@@ -302,7 +302,7 @@ def processFiles(pathInfo, cacheFile,batch_script,templateID,subjects,overwriteA
                     #check all renderPath assets exist
                     assetCheck(renderPathInfo)
 
-                    scene_f.write(sceneEditor(params,renderPathInfo, templateID).replace("\\", "\\\\"))
+                    scene_f.write(sceneEditor(params,renderPathInfo, LightingCase).replace("\\", "\\\\"))
                     if permID == "" or permID == '':
                         print(f"Ground truth Scene file for subject {subjNum} created.")
                         
@@ -330,4 +330,4 @@ def processFiles(pathInfo, cacheFile,batch_script,templateID,subjects,overwriteA
                    
 
 
-                return texture, overwriteALL
+                return texture, overwriteALL, scene_name
