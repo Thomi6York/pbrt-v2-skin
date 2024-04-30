@@ -29,6 +29,9 @@ src/multipole/ipch
 src/multipole/*.suo
 src/multipole/*.user
 
+#ignore the g drive folder
+sharedFolder/
+
 # VS Build folders
 tmp/
 bin/
