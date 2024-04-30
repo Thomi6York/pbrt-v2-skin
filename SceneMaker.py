@@ -1,5 +1,6 @@
 import csv
 import os
+import sys
 
 
 def generate_scene_file(param1, param2,param3,param4, outFile):
@@ -79,8 +80,8 @@ def write_scene_file(scene_text, output_path):
     with open(output_path, 'w') as f:
         f.write(scene_text)
 
-def main():
-    input_csv_file = 'perms.csv' #this is just for the permutations that will be used in the render 
+def main(input_csv_file = 'perms.csv'):
+     #input_CSV_file is just for the permutations that will be used in the render 
     output_directory = 'output_scenes'
     render_directory = 'render_bulk'
     archive_directory = 'render_archive'
@@ -150,12 +151,20 @@ def main():
             # Generate render commands, but only if it hasn't been done already
             
             count = 0
+            #check it doesn't exist in the render directory
             if not os.path.exists(f'{render_directory}/{output_filename.replace(".pbrt", ".exr")}'):
-                command = f' .\\bin\\pbrt.exe .\\output_scenes\\{output_filename}\n '
-                batch_file.write(command)
-                print(f'Render command for {output_filename} added to batch file')
+                #make additional checks to see if the scene has already been rendered in archive folder
+                if not os.path.exists(f'{archive_directory}/{output_filename.replace(".pbrt", ".exr")}'):
+                    command = f' .\\bin\\pbrt.exe .\\output_scenes\\{output_filename}\n '
+                    batch_file.write(command)
+                    print(f'Render command for {output_filename} added to batch file')
+                #if it does esist in the archive folder, then we can skip the render command generation and move it to bulk render folder
+                else:
+                    os.rename(os.path.join(archive_directory, output_filename.replace(".pbrt", ".exr")), os.path.join(render_directory, output_filename.replace(".pbrt", ".exr")))
+                    print(f'{output_filename} already rendered, moving to render directory but skipping render command generation')
+                    count += 1
             else:
-                print(f'{output_filename} already rendered, skipping render command generation')
+                print(f'{output_filename} already rendered in render directory  , skipping render command generation')
                 count += 1
     
     print(f'{count} scene files already rendered, skipping render command generation for those scenes')
@@ -211,4 +220,13 @@ def main():
     print('Render commands executed successfully!')
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: python SceneMaker.py <input_csv_file>")
+        sys.exit(1)
+    input_csv_file = sys.argv[1]
+    print(f"Input CSV file: {input_csv_file}")
+    #check input file exists
+    if not os.path.exists(input_csv_file):
+        print(f"Error: {input_csv_file} does not exist")
+        sys.exit(1)
+    main(input_csv_file)
