@@ -53,7 +53,8 @@ Experiments/
 /ExperimentalData/
 #*.bat Want these for me
 
-
+# shared folder
+sharedFolder/
 
 
 *.obj
