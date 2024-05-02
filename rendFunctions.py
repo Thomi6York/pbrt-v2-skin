@@ -67,7 +67,7 @@ def sceneEditor(params,pathInfo,LightingCase):
             Texture "lambertian-norm" "color" "imagemap" "string filename" ""{albedoTexturePath}""
                 "string wrap" "clamp" "float gamma" 1 "float scale" 1
             Texture "spec" "color" "imagemap" "string filename"  "{specTexturePath}"
-                "string wrap" "clamp" "float gamma" 2.2 "float scale" 1
+                "string wrap" "clamp" "float gamma" 1 "float scale" 1
 
             AttributeBegin
                 Translate 0 1 -.35 # move up a bit
@@ -167,11 +167,17 @@ def  createPaths(pathInfo):
 
     #loop through the pathInfo object and create paths if they don't exist
     for key, value in pathInfo.items():
-        if not os.path.exists(value):
+        
+        if key == "pathHandle" or key == "fileHandle":
+            continue
+        elif not os.path.exists(value):
             os.makedirs(value)
             print(f"{key} path created.")
         else:
             print(f"{key} path already exists.")
+       
+       
+        
 
         # Convert pathInfo dictionary to a JSON object
         json_object = json.dumps(pathInfo)
@@ -250,84 +256,84 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,overwrit
     #set default handle to empty string
     if handle == None:
         handle = ""
-    with open(batch_script, "w") as f:
+    #with open(batch_script, "w") as f:
                             
-                #remember paths are set relative to the pbrt file not the python script
-                #lets set the saving path with absolute paths to avoid confusion
-                textureDir = pathInfo["TexPath"]
-                # read cache file and get params
-                params = readCacheFile(cacheFile,subjects)
+    #remember paths are set relative to the pbrt file not the python script
+    #lets set the saving path with absolute paths to avoid confusion
+    textureDir = pathInfo["TexPath"]
+    # read cache file and get params
+    params = readCacheFile(cacheFile,subjects)
 
-                #assign params dict to variable names
-                subjNum = params["subjNum"]
-                melConc = params["melConc"]
-                hemConc = params["hemConc"]
-                permID = params["permID"]
-                scenePath = pathInfo["scenePath"]
-                #unpack paths from render path info
-                renderDir = pathInfo["renderPath"]
-                if permID == "" or permID == '':
-                    renderPath = f"{renderDir}{subjNum}"
-                    scene_name = f"{subjNum}_{handle}.pbrt"
-                    texture = f"normTexISONorm{subjNum}.exr" # get the texture
-                else:
-                    renderPath = f"{renderDir}{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip"
-                    scene_name = f"{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip{handle}.pbrt"
-                    texture = f"PermID{permID}_ISONorm{subjNum}.exr" # get the texture 
-                
+    #assign params dict to variable names
+    subjNum = params["subjNum"]
+    melConc = params["melConc"]
+    hemConc = params["hemConc"]
+    permID = params["permID"]
+    scenePath = pathInfo["scenePath"]
+    #unpack paths from render path info
+    renderDir = pathInfo["renderPath"]
+    if permID == "" or permID == '':
+        renderPath = f"{renderDir}{subjNum}"
+        scene_name = f"{subjNum}_{handle}.pbrt"
+        texture = f"normTexISONorm{subjNum}.exr" # get the texture
+    else:
+        renderPath = f"{renderDir}{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip"
+        scene_name = f"{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip{handle}.pbrt"
+        texture = f"PermID{permID}_{subjNum}.exr" # get the texture 
+    
 
-                #add additional name if exists]
-                if handle != "":
-                    renderPath = f"{renderPath}{handle}"
-                #append exr to render path
-                renderPath = f"{renderPath}.exr"
+    #add additional name if exists]
+    if handle != "":
+        renderPath = f"{renderPath}{handle}"
+    #append exr to render path
+    renderPath = f"{renderPath}.exr"
 
-                albedoTexturePath = f"{textureDir}{texture}"
-                meshPath = pathInfo["meshPath"]
-                dataSetPath = pathInfo["dataSetPath"]
+    albedoTexturePath = f"{textureDir}{texture}"
+    meshPath = pathInfo["meshPath"]
+    dataSetPath = pathInfo["dataSetPath"]
 
-                #write the scene file
-                scene_file = os.path.join(scenePath, scene_name)
+    #write the scene file
+    scene_file = os.path.join(scenePath, scene_name)
 
-                with open(scene_file, "w") as scene_f:
-                    
-                    #define path info for the scene editor
-                    renderPathInfo = {
-                        "renderPath": renderPath,
-                        "albedoTexturePath": albedoTexturePath,
-                        "meshPath": f"{meshPath}{subjNum}mesh.pbrt",
-                        "specTexturePath": f"{dataSetPath}{subjNum}\\shader\\spec_texture.tga"
-                    }
+    with open(scene_file, "w") as scene_f:
+        
+        #define path info for the scene editor
+        renderPathInfo = {
+            "renderPath": renderPath,
+            "albedoTexturePath": albedoTexturePath,
+            "meshPath": f"{meshPath}{subjNum}mesh.pbrt",
+            "specTexturePath": f"{dataSetPath}{subjNum}\\shader\\spec_textureISONorm.exr" 
+        }
 
-                    #check all renderPath assets exist
-                    assetCheck(renderPathInfo)
+        #check all renderPath assets exist
+        assetCheck(renderPathInfo)
 
-                    scene_f.write(sceneEditor(params,renderPathInfo, LightingCase).replace("\\", "\\\\"))
-                    if permID == "" or permID == '':
-                        print(f"Ground truth Scene file for subject {subjNum} created.")
-                        
-                    else:
-                        print(f"Perm Scene file {permID} created for subject {subjNum}.")
+        scene_f.write(sceneEditor(params,renderPathInfo, LightingCase).replace("\\", "\\\\"))
+        if permID == "" or permID == '':
+            print(f"Ground truth Scene file for subject {subjNum} created.")
+            
+        else:
+            print(f"Perm Scene file {permID} created for subject {subjNum}.")
+    scene_command = f'".\\bin\\pbrt.exe" "{scene_file}"\n'
 
-                # Append commands to batch script if we want the subject and the .exr doesn't already exist
-                if not os.path.exists(renderPath) | overwriteALL == True:
-                    scene_command = f'".\\bin\\pbrt.exe" "{scene_file}"\n'
-                    f.write(scene_command)
-                else :
-                    print(f"Scene {renderPath} already rendered. Overwrite?")
-                    #give a warning that the file already exists and ask if we want to overwrite
-                    #if we do, append the command to the batch script
-                    input("Press Y to overwrite or any other key to skip, or YY for all:")
-                    if input == "Y" or "YY":
-                        scene_command = f'".\\bin\\pbrt.exe" "{scene_file}"\n'
-                        f.write(scene_command)
-                        if input == "YY":
-                            print("Overwriting all files.")
-                            overwriteALL = True
-                    else:
-                        print(f"Skipping {subjNum}.")
-                    #if we don't, skip the subject
-                   
-
-
-                return texture, overwriteALL, scene_name
+    # Append commands to batch script if we want the subject and the .exr doesn't already exist
+    if not os.path.exists(renderPath) | overwriteALL == True:
+        scene_command = f'".\\bin\\pbrt.exe" "{scene_file}"\n'
+        #f.write(scene_command)
+    else :
+        print(f"Scene {renderPath} already rendered. Overwrite?")
+        #give a warning that the file already exists and ask if we want to overwrite
+        #if we do, append the command to the batch script
+        input("Press Y to overwrite or any other key to skip, or YY for all:")
+        if input == "Y" or "YY":
+            scene_command = f'".\\bin\\pbrt.exe" "{scene_file}"\n'
+            #f.write(scene_command)
+            if input == "YY":
+                print("Overwriting all files.")
+                overwriteALL = True
+        else:
+            print(f"Skipping {subjNum}.")
+            scene_command = ""
+        #if we don't, skip the subject
+        
+    return  overwriteALL, scene_command

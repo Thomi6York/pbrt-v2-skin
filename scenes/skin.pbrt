@@ -46,7 +46,7 @@ WorldBegin
                            "float f_eu" 0.6
                            "float f_blood" 0.009
                            "float f_ohg" 0.8
-                           #"texture bumpmap" "headbump"
+                           "texture bumpmap" "headbump"
                            "texture albedo" "lambertian-norm"
     Include "geometry/head.pbrt"
   AttributeEnd
