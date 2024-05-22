@@ -1,1 +1,0 @@
-obj2pbrt.exe preprocMesh.obj test1.pbrt
