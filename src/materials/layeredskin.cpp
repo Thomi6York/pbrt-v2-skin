@@ -37,14 +37,14 @@
 #include "skincoeffs.h"
 
 LayeredSkin::LayeredSkin(const vector<SkinLayer>& layers, float r, float npu,
-	const SkinCoefficients& coeff, Reference<Texture<Spectrum> > Kr, Reference<Texture<Spectrum> > Kt,
+	const SkinCoefficients& coeff, Reference<Texture<Spectrum> > Kr, Reference<Texture<Spectrum> > Kt, Reference<Texture<Spectrum> > normalMap,
 	Reference<Texture<float> > bumpMap, Reference<Texture<Spectrum> > albedo, bool doubleRefSSLF,
 	bool generateProfile, bool useMonteCarloProfile, uint64_t nPhotons, bool lerpOnThinSlab,
 	bool showIrradiancePoints, float irradiancePointSize, bool rgbProfile, int desiredLength)
-	: layers(layers), roughness(r), nmperunit(npu), pcoeff(new SkinCoefficients(coeff)), Kr(Kr), Kt(Kt),
+	: layers(layers), roughness(r), nmperunit(npu), pcoeff(new SkinCoefficients(coeff)), Kr(Kr), Kt(Kt), normalMap(normalMap),
 	  bumpMap(bumpMap), albedo(albedo), doubleRefSSLF(doubleRefSSLF)
 {
-	const float NM_PER_CM = 1e7f;
+	const float NM_PER_CM = 1e7f; 
 	// Calculate layer params
 	// Epidermis
 	lps[0].thickness = layers[0].thickness / nmperunit;
@@ -143,6 +143,11 @@ BSDF* LayeredSkin::GetBSDF(const DifferentialGeometry &dgGeom,
 	DifferentialGeometry dgs;
 	if (bumpMap)
 		Bump(bumpMap, dgGeom, dgShading, &dgs);
+	
+	else if (normalMap) { // here is the normal map implentation 
+		// code to be executed if the condition is true
+		Norm_From_Spectrum(normalMap, dgGeom, dgShading, &dgs);
+	}
 	else
 		dgs = dgShading;
 
@@ -243,6 +248,7 @@ LayeredSkin* CreateLayeredSkinMaterial(const ParamSet& ps, const TextureParams& 
 	SkinCoefficients coeff(f_mel, f_eu, f_blood, f_ohg, ga_epi, ga_derm, b_derm);
     Reference<Texture<Spectrum> > Kr = mp.GetSpectrumTexture("Kr", Spectrum(1.f));
     Reference<Texture<Spectrum> > Kt = mp.GetSpectrumTexture("Kt", Spectrum(1.f));
+	Reference<Texture<Spectrum> > normalMap = mp.GetSpectrumTextureOrNull("normalmap"); //attempt to add a normal map implementation to the layered skin material
     Reference<Texture<float> > bumpMap = mp.GetFloatTextureOrNull("bumpmap");
 	Reference<Texture<Spectrum> > albedo = mp.GetSpectrumTexture("albedo", Spectrum(1.f));
 	bool doubleRefSSLF = ps.FindOneBool("doublerefsslf", false);
@@ -255,8 +261,10 @@ LayeredSkin* CreateLayeredSkinMaterial(const ParamSet& ps, const TextureParams& 
 	float irradiancePointSize = ps.FindOneFloat("irradiancepointsize", 0.002f);
 	bool rgbProfile = ps.FindOneBool("rgbprofile", false);
 	int desiredLength = ps.FindOneInt("desiredlength", 512);
+
+
 	return new LayeredSkin(vector<SkinLayer>(layers, layers + nLayers),
-		roughness, nmperunit, coeff, Kr, Kt, bumpMap, albedo, doubleRefSSLF,
+		roughness, nmperunit, coeff, Kr, Kt, normalMap, bumpMap, albedo, doubleRefSSLF,
 		generateProfile, useMonteCarloProfile, photons, lerpOnThinSlab,
 		showIrradiancePoints, irradiancePointSize, rgbProfile, desiredLength);
 }

@@ -727,4 +727,19 @@ Reference<Texture<float> > TextureParams::GetFloatTextureOrNull(const string &n)
     }
 }
 
+Reference<Texture<Spectrum> > TextureParams::GetSpectrumTextureOrNull(const string &n) const {
+    string name = geomParams.FindTexture(n);
+    if (name == "")
+        name = materialParams.FindTexture(n);
+    if (name == "")
+        return NULL;
+    if (spectrumTextures.find(name) != spectrumTextures.end())
+        return spectrumTextures[name];
+    else {
+        Error("Couldn't find float texture named \"%s\" for parameter \"%s\"",
+              name.c_str(), n.c_str());
+        return NULL;
+    }
+}
+
 

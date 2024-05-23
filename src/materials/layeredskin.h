@@ -41,7 +41,7 @@ public:
     // LayeredSkin Public Methods
 	LayeredSkin(const vector<SkinLayer>& layers, float roughness,
 		float nmperunit, const SkinCoefficients& coeff,
-		Reference<Texture<Spectrum> > Kr, Reference<Texture<Spectrum> > Kt,
+		Reference<Texture<Spectrum> > Kr, Reference<Texture<Spectrum> > Kt, Reference<Texture<Spectrum> > normalMap,
 		Reference<Texture<float> > bumpMap, Reference<Texture<Spectrum> > albedo,
 		bool doubleRefSSLF, bool generateProfile, bool useMonteCarloProfile, uint64_t nPhotons,
 		bool lerpOnThinSlab, bool showIrradiancePoints, float irradiancePointSize,
@@ -83,6 +83,7 @@ private:
 	LayerParam lps[3];
 	Reference<Texture<Spectrum> > Kr;
 	Reference<Texture<Spectrum> > Kt;
+	Reference<Texture<Spectrum> > normalMap;
 	Reference<Texture<float> > bumpMap;
 	Reference<Texture<Spectrum> > albedo;
 	MultipoleBSSRDFData* preparedBSSRDFData;

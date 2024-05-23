@@ -103,6 +103,68 @@ void Material::Bump(const Reference<Texture<float> > &d,
     dgBump->nn = Faceforward(dgBump->nn, dgGeom.nn);
 }
 
+// this is from the imperial code -- lets make it make more sense though
+void Material::Norm_From_Spectrum(const Reference<Texture<Spectrum> > &d,
+	const DifferentialGeometry &dgGeom,
+	const DifferentialGeometry &dgs,
+	DifferentialGeometry *dgBump) {
+	// Compute offset positions and evaluate displacement texture
+	DifferentialGeometry dgEval = dgs;
+
+	Spectrum bump_spectrum = d->Evaluate(dgs);
+	float* x_val_normal = bump_spectrum.nextSample(0);
+	*x_val_normal = ((*x_val_normal * 2) - 1);
+
+	float* y_val_normal = bump_spectrum.nextSample(1);
+	*y_val_normal = ((*y_val_normal * 2) - 1);
+
+	float* z_val_normal = bump_spectrum.nextSample(2);
+	*z_val_normal = ((*z_val_normal * 2) - 1);
+
+	if (*x_val_normal == 0) 
+		{ *x_val_normal -= 0.0000001f; }
+	if (*y_val_normal == 0) 
+		{ *y_val_normal -= 0.0000001f; }
+	if (*z_val_normal == 0) 
+		{ *z_val_normal -= 0.0000001f; }
+
+	Vector normal_from_texture = Vector(*x_val_normal, *y_val_normal, *z_val_normal);
+
+
+	// Shift _dgEval_ _du_ in the $u$ direction
+	float du = .5f * (fabsf(dgs.dudx) + fabsf(dgs.dudy));
+	if (du == 0.f) du = .01f;
+	dgEval.p = dgs.p + du * dgs.dpdu;
+	dgEval.u = dgs.u + du;
+	dgEval.nn = Normalize((Normal)Cross(dgs.dpdu, dgs.dpdv) +
+		du * dgs.dndu);
+
+	// Shift _dgEval_ _dv_ in the $v$ direction
+	float dv = .5f * (fabsf(dgs.dvdx) + fabsf(dgs.dvdy));
+	if (dv == 0.f) dv = .01f;
+	dgEval.p = dgs.p + dv * dgs.dpdv;
+	dgEval.u = dgs.u;
+	dgEval.v = dgs.v + dv;
+	dgEval.nn = Normalize((Normal)Cross(dgs.dpdu, dgs.dpdv) +
+		dv * dgs.dndv);
+
+  // all displacements are set to zero 
+  float uDisplace = 0.0f;
+	float vDisplace = 0.0f;
+	float displace = 0.0f;
+
+	// Copy input shading geometry since we ignore displacements
+	*dgBump = dgs;
+	dgBump->nn = Normal(Normalize(normal_from_texture));
+	
+	//dgBump->nn = dgs.nn;
+
+	if (dgs.shape->ReverseOrientation ^ dgs.shape->TransformSwapsHandedness)
+		dgBump->nn *= -1.f;
+
+	// Orient shading normal to match geometric normal
+	dgBump->nn = Faceforward(dgBump->nn, dgGeom.nn);
+}
 
 void BumpMapping::Bump(const DifferentialGeometry& dgGeom, const DifferentialGeometry& dgShading,
 	DifferentialGeometry* dgBump) const

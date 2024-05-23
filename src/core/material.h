@@ -47,9 +47,10 @@ using std::vector;
 class BumpMapping {
 public:
 	// BumpMapping Public Methods
-	BumpMapping(const Reference<Texture<float> >& bm) : bumpMap(bm) {}
+	BumpMapping(const Reference<Texture<float> >& bm) : bumpMap(bm) {};
 	void Bump(const DifferentialGeometry& dgGeom, const DifferentialGeometry& dgShading,
 		DifferentialGeometry* dgBump) const;
+	
 private:
 	// BumpMapping Private Data
 	Reference<Texture<float> > bumpMap;
@@ -84,6 +85,9 @@ public:
 	virtual ~Material();
     static void Bump(const Reference<Texture<float> > &d, const DifferentialGeometry &dgGeom,
         const DifferentialGeometry &dgShading, DifferentialGeometry *dgBump);
+
+	static void Norm_From_Spectrum(const Reference<Texture<Spectrum> > &d, const DifferentialGeometry &dgGeom,
+		const DifferentialGeometry &dgShading, DifferentialGeometry *dgBump);
     // Material Public Data
     const uint32_t materialId;
 protected:

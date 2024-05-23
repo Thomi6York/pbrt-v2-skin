@@ -169,6 +169,7 @@ public:
     Reference<Texture<float> > GetFloatTexture(const string &name,
             float def) const;
     Reference<Texture<float> > GetFloatTextureOrNull(const string &name) const;
+    Reference<Texture<Spectrum> > GetSpectrumTextureOrNull(const string &name) const;
     float FindFloat(const string &n, float d) const {
         return geomParams.FindOneFloat(n, materialParams.FindOneFloat(n, d));
     }

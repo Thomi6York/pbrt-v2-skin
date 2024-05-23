@@ -282,6 +282,21 @@ public:
             if (fscanf(f, "%f ", &c[i]) != 1) return false;
         return true;
     }
+
+    // *sigh* want some way of getting individual spectra. I took this from the imperial code
+    float* nextSample(int sampleIndex) {
+      if (sampleIndex >= nSamples) {
+	return NULL;
+      }
+      return &c[sampleIndex];
+    }
+    const float* nextSample(int sampleIndex) const {
+      if (sampleIndex >= nSamples) {
+	return NULL;
+      }
+      return &c[sampleIndex];
+    }
+
 protected:
     // CoefficientSpectrum Protected Data
     float c[nSamples];
