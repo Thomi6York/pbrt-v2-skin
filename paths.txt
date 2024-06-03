@@ -1,3 +1,0 @@
-chromPath: C:\Users\tw1700\Downloads\Code_chromophores_estimation\
-pigPath: C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\pigmentMaps\
-texPath: C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\textures\normTex\

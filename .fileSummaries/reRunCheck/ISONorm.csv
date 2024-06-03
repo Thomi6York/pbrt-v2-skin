@@ -1,0 +1,7 @@
+TexPath,.\results\experiments\reRunCheck\\normTex\
+renderPath,.\results\experiments\reRunCheck\\groundTruth\
+scenePath,.\results\experiments\reRunCheck\\scenes
+dataSetPath,.\scenes\PilotDataSet\
+cachePath,.\results\experiments\reRunCheck\\cache\
+meshPath,C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\geometry\processed\
+pigPath,C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\experiments\reRunCheck\\pigmentMaps\

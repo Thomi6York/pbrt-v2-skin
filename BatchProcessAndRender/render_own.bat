@@ -1,1 +1,0 @@
-E:\pbrt-v2-skinPat\bin\pbrt.exe ..\scenes\MyHead.pbrt --outfile ..\results\InverseGTTest.exr

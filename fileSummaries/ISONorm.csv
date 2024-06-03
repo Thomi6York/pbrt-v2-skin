@@ -1,0 +1,7 @@
+TexPath,.\scenes\textures\normTex\
+renderPath,.\results\groundTruth\
+scenePath,.\scenes\normTexScenes\
+dataSetPath,.\scenes\PilotDataSet\
+cachePath,.\scenes\textures\normTex\cache\
+meshPath,C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\geometry\processed\
+pigPath,C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\pigmentMaps\
