@@ -80,7 +80,7 @@ def write_scene_file(scene_text, output_path):
     with open(output_path, 'w') as f:
         f.write(scene_text)
 
-def main(input_csv_file = 'perms.csv'):
+def main(input_csv_file = 'perms.csv', reRenderInputs = False,archive=False):
      #input_CSV_file is just for the permutations that will be used in the render 
     output_directory = 'output_scenes'
     render_directory = 'render_bulk'
@@ -108,9 +108,6 @@ def main(input_csv_file = 'perms.csv'):
 
     # Remove empty elements
     params= [[value for value in row if value.strip()] for row in params]
-
-
- 
 
     # Generate combinations and create scene files
     with open("render_scenes.bat", "w") as batch_file:
@@ -151,50 +148,59 @@ def main(input_csv_file = 'perms.csv'):
             # Generate render commands, but only if it hasn't been done already
             
             count = 0
-            #check it doesn't exist in the render directory
-            if not os.path.exists(f'{render_directory}/{output_filename.replace(".pbrt", ".exr")}'):
-                #make additional checks to see if the scene has already been rendered in archive folder
-                if not os.path.exists(f'{archive_directory}/{output_filename.replace(".pbrt", ".exr")}'):
-                    command = f' .\\bin\\pbrt.exe .\\output_scenes\\{output_filename}\n '
-                    batch_file.write(command)
-                    print(f'Render command for {output_filename} added to batch file')
-                #if it does esist in the archive folder, then we can skip the render command generation and move it to bulk render folder
+            if not reRenderInputs:
+                #check it doesn't exist in the render directory
+                if not os.path.exists(f'{render_directory}/{output_filename.replace(".pbrt", ".exr")}'):
+
+                    #make additional checks to see if the scene has already been rendered in archive folder
+                    if not os.path.exists(f'{archive_directory}/{output_filename.replace(".pbrt", ".exr")}'):
+                        command = f' .\\bin\\pbrt.exe .\\output_scenes\\{output_filename}\n '
+                        batch_file.write(command)
+                        print(f'Render command for {output_filename} added to batch file')
+                    #if it does esist in the archive folder, then we can skip the render command generation and move it to bulk render folder
+                    else:
+                        os.rename(os.path.join(archive_directory, output_filename.replace(".pbrt", ".exr")), os.path.join(render_directory, output_filename.replace(".pbrt", ".exr")))
+                        print(f'{output_filename} already rendered, moving to render directory but skipping render command generation')
+                        count += 1
                 else:
-                    os.rename(os.path.join(archive_directory, output_filename.replace(".pbrt", ".exr")), os.path.join(render_directory, output_filename.replace(".pbrt", ".exr")))
-                    print(f'{output_filename} already rendered, moving to render directory but skipping render command generation')
+                    print(f'{output_filename} already rendered in render directory  , skipping render command generation')
                     count += 1
-            else:
-                print(f'{output_filename} already rendered in render directory  , skipping render command generation')
+            else: # we always want to render the scene files if reRenderInputs is set to True
+                command = f' .\\bin\\pbrt.exe .\\output_scenes\\{output_filename}\n '
+                batch_file.write(command)
+                print(f'Render command for {output_filename} added to batch file')
                 count += 1
     
     print(f'{count} scene files already rendered, skipping render command generation for those scenes')
     #generate_render_commands(output_directory, params)
     print('Scene files generated successfully!')
 
-    # Search through the directory and move scenes which have been rendered to the archive directory
-    print('Moving rendered scene files to archive directory...')
-    count = 0
-    for filename in os.listdir(output_directory):
-        if filename.endswith('.pbrt'):
-            archive_filename = filename.replace('.pbrt', '.pbrt')
-            if archive_filename in os.listdir(render_directory):
-                os.rename(os.path.join(output_directory, filename), os.path.join(archive_directory, archive_filename))
-                print(f'Moved {filename} to {archive_directory}/{archive_filename} because it was already rendered')
-                count += 1
-                
-    print(f'{count} scene files moved to archive directory')
+    if archive == True:
+        # Search through the directory and move scenes which have been rendered to the archive directory
+        print('Moving rendered scene files to archive directory...')
+        count = 0
+        for filename in os.listdir(output_directory):
+            if filename.endswith('.pbrt'):
+                archive_filename = filename.replace('.pbrt', '.pbrt')
+                if archive_filename in os.listdir(render_directory):
+                    os.rename(os.path.join(output_directory, filename), os.path.join(archive_directory, archive_filename))
+                    print(f'Moved {filename} to {archive_directory}/{archive_filename} because it was already rendered')
+                    count += 1
+                    
+        print(f'{count} scene files moved to archive directory')
 
-    # Move rendered exr files not in the perms list to the archive directory
-    print('Moving rendered exr files not in the perms list to the archive directory...')
-    count = 0
-    for filename in os.listdir(render_directory):
-        if filename.endswith('.exr'):
-            if filename.replace('.exr','.pbrt') not in os.listdir(output_directory):
-                os.rename(os.path.join(render_directory, filename), os.path.join(archive_directory, filename))
-                print(f'Moved {filename} to {archive_directory}/{filename} because it was not in the perms list')
-                count += 1
-    
-    print(f'{count} exr files moved to archive directory')
+        # Move rendered exr files not in the perms list to the archive directory
+        print('Moving rendered exr files not in the perms list to the archive directory...')
+        count = 0
+        for filename in os.listdir(render_directory):
+            if filename.endswith('.exr'):
+                if filename.replace('.exr','.pbrt') not in os.listdir(output_directory):
+                    os.rename(os.path.join(render_directory, filename), os.path.join(archive_directory, filename))
+                    print(f'Moved {filename} to {archive_directory}/{filename} because it was not in the perms list')
+                    count += 1
+        
+        print(f'{count} exr files moved to archive directory')
+        
     
     # Count the number of scene files added to the batch file
     scene_file_count = 0
@@ -220,13 +226,14 @@ def main(input_csv_file = 'perms.csv'):
     print('Render commands executed successfully!')
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python SceneMaker.py <input_csv_file>")
+    if len(sys.argv) != 3:
+        print("Usage: python SceneMaker.py <input_csv_file> <reRenderInputs>")
         sys.exit(1)
     input_csv_file = sys.argv[1]
     print(f"Input CSV file: {input_csv_file}")
+    
     #check input file exists
     if not os.path.exists(input_csv_file):
         print(f"Error: {input_csv_file} does not exist")
         sys.exit(1)
-    main(input_csv_file)
+    main(input_csv_file,reRenderInputs=sys.argv[2])

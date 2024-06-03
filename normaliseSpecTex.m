@@ -22,14 +22,10 @@ for subj = subjects
      %normalise 
      specular_image = (specular_image.*ISOref)/ISO;
 
-    
-
-    specular_image = lin2rgb(specular_image);
-
     %display image for checking
-    figure; imshow(specular_image); title('Normalised Specular Texture');
+    figure; imshow(lin2rgb(specular_image)); title('Normalised Specular Texture');
 
-    %save the normalised texture as an .exr
+    %save the normalised texture as an .exr in lin rgb
     exrwrite(specular_image, [subj_id_string '\shader\spec_textureISONorm.exr']);
 
     disp(['Normalised specular texture for subject' subj_id_string 'saved as spec_textureISONorm.exr'])
