@@ -95,7 +95,7 @@ rendering.debug=1;
 rendering.fixBandK =1; 
 repeat = 1; 
 rendering.pigPath = 'C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\matlab\';
-rendering.subsampling_factor_img = 10; 
+rendering.subsampling_factor_img = 30; 
 
 if exist(rendering.pigPath, 'file')
     disp('pigPath file found')
@@ -109,7 +109,7 @@ else
     disp('cannot find paths')
 end
 %%
-for subj = 0 
+for subj = 0
     rendering.subj_id_string = ['S' num2str(subj, '%03d')];
 
     % check whether maps are precalculated
@@ -117,22 +117,18 @@ for subj = 0
     % load the mask for the face
     rendering.shaderPath = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\', rendering.subj_id_string, '\shader\');
     addpath(rendering.shaderPath);
-    %rendering.face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp')); 
-    % load in eyebrows mask instead
-    rendering.face_mask = exrread(strcat(rendering.shaderPath,rendering.subj_id_string,'_E00_MaskEyebrow.exr'));
-   
+    rendering.face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp')); 
     rendering.face_mask = rendering.face_mask(:,:,2)>0;
-     rendering.face_mask = rendering.face_mask(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end);
+    
 %%
     %mapName = strcat(rendering.pigPath, rendering.subj_id_string, '_newMapsISONorm.mat');
     %check for pig maps
     if repeat % only repeat if we want too
         disp('Repeat flag set');
         disp(strcat('Inverse rendering in progress for subject: ', rendering.subj_id_string));
-        [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(rendering);
-    end 
-    %%
-    if fixBandK % if we want to fix the beta and K values
+        [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rendering(rendering);
+
+    elseif fixBandK % if we want to fix the beta and K values
         rendering = loadOldMapsandEdit(rendering);
         Out_Mel = rendering.Out_Mel;
         Out_Hem = rendering.Out_Hem;
@@ -141,8 +137,8 @@ for subj = 0
         Out_Img = rendering.Out_Img;
         subfacemask = rendering.face_mask;
 
-        save(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName, '.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
-%%
+        save(strcat(rendering.pigPath, rendering.subj_id_string, '_newMapsISONorm', 'fileHandle.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
+
     else 
 
         disp('Loading pre-existing maps');
@@ -201,16 +197,16 @@ for subj = 0
         figure; imshow(normIm);title('transformed for rendering');
     end
     
-    exrwrite(normIm,strcat(rendering.TexPath, rendering.subj_id_string, fileName, '.exr')); %write to the tex directory 
+    exrwrite(normIm,strcat('normTexISONorm', fileHandle, rendering.subj_id_string, '.exr')); %write to the rendering directory 
     if rendering.debug
-        disp(strcat('Saving texture to ', rendering.TexPath, rendering.subj_id_string, fileName,  '.exr'));
+        disp(strcat('Saving texture to ','normTexISONorm', fileHandle, rendering.subj_id_string, '.exr'));
     end
 
     % give it a blank permID
     count = [];
     
     % Write cache file
-    cacheFile = fullfile(cachePath, ['cache_' rendering.subj_id_string fileName '.txt']);
+    cacheFile = fullfile([cachePath pathHandle], ['cache_' rendering.subj_id_string fileHandle '.txt']);
     fid = fopen(cacheFile, 'w');
     fprintf(fid, 'Subject: %s\n', rendering.subj_id_string);
     fprintf(fid, 'Melanin 3rd percentile: %f\n', melPerc);
@@ -254,20 +250,18 @@ function distance_94=DeltaE_94_pix_to_Matrix1D(Lab1, M_Lab2)
     
     distance_94 = sqrt( ((delta_L)/(kl*Sl)).^2 + ((delta_Cab)/(kc*Sc)).^2 + ((delta_Hab)/(kh*Sh)).^2); 
 end
-%% 
+
 function rendering = loadOldMapsandEdit(rendering) % fix old maps
     %load the old maps
 
-    %originalISONormPath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\pigmentMaps\"; 
-    
-    %originalISONormPath = rendering.pigPath; %-- specify custom handle here
-
-    load(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName,'.mat'));
-    
+    originalISONormPath = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\pigmentMaps\"; 
+    load(strcat(originalISONormPath, rendering.subj_id_string, '_newMapsISONorm.mat'));
     disp('Old Maps loaded');
 
+    load .\data\inverse_rendering_data.mat
+
     if rendering.debug
-        Input_Img = imread([rendering.dataSetPath  rendering.subj_id_string  '\shader\diff_texture.bmp']); 
+        Input_Img = imread([path '\diff_texture.bmp']); 
         disp('Input diff texture loaded ')
         figure;imshow(Input_Img);title('Original Diffuse texture')
 
@@ -282,7 +276,7 @@ function rendering = loadOldMapsandEdit(rendering) % fix old maps
 
     best_Beta = getBeta(rendering); % get the mode sub here
 
-    Out_Beta(face_mask) = rendering.Beta_sampling(best_Beta); % set all the beta values to the mode
+    Out_Beta(face_mask) = Beta_sampling(best_Beta); % set all the beta values to the mode
 
     Out_Epth(face_mask & (Out_Epth>110)) = 110; % set all the epidermal thickness values to 11 
     Out_Epth(face_mask & (Out_Epth<30)) = 30; % set all the epidermal thickness values to 3
@@ -301,10 +295,10 @@ function rendering = loadOldMapsandEdit(rendering) % fix old maps
     indBeta = indHem;
     indEpth = indHem;
 
-    [~,indBeta] = min(abs(Out_Beta(face_mask)-rendering.Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
-    [~,indEpth] = min(abs(Out_Epth(face_mask)-rendering.Epth_sampling),[],2);
-    [~,indMel] = min(abs(Out_Mel(face_mask)-rendering.Mel_sampling'),[],2);
-    [~,indHem] = min(abs(Out_Hem(face_mask)-rendering.Hem_sampling'),[],2); %need to transpose these sampled for subtraction 
+    [~,indBeta] = min(abs(Out_Beta(face_mask)-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
+    [~,indEpth] = min(abs(Out_Epth(face_mask)-Epth_sampling),[],2);
+    [~,indMel] = min(abs(Out_Mel(face_mask)-Mel_sampling'),[],2);
+    [~,indHem] = min(abs(Out_Hem(face_mask)-Hem_sampling'),[],2); %need to transpose these sampled for subtraction 
 
     %vectorize the in
     indBeta = reshape(indBeta,[],1);
@@ -313,10 +307,10 @@ function rendering = loadOldMapsandEdit(rendering) % fix old maps
     indHem = reshape(indHem,[],1);
 
     % get length of the indices
-    B = length(rendering.Beta_sampling);
-    K = length(rendering.Epth_sampling);
-    M = length(rendering.Mel_sampling);
-    N = length(rendering.Hem_sampling);
+    B = length(Beta_sampling);
+    K = length(Epth_sampling);
+    M = length(Mel_sampling);
+    N = length(Hem_sampling);
 
     Out_Img = zeros(R*C,3); % output 2D equivalent of the renderinged image
     face_mask = reshape(face_mask,[],1);
@@ -340,40 +334,30 @@ function rendering = loadOldMapsandEdit(rendering) % fix old maps
     
 
 end
-%%
-function sub = getBeta(rendering)
-                %get the modal beta value from the permID
-                %load the original maps
 
-                load(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName,'.mat'));
-                
-
-                % get the mode of the beta values
-                beta_mode = mode(Out_Beta(rendering.face_mask),'all');
-
-                % compare to samples
-                sub = find(beta_mode==rendering.Beta_sampling);
-
-                % we encapulate this in a function to avoid having to overwrite the maps
-end
-
-function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(rendering)
-
+function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rendering(rendering)
+            tic
             %load image 
             Input_Img = imread([rendering.shaderPath '\diff_texture.bmp']); 
             Input_Img = (double(Input_Img(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end,:))./255).^2.2; % subsample the image and convert to linear space
-    
+            true_Input = Input_Img;
             %normalise ISOs
             ISO = rendering.isoValues(rendering.subj +1,2);
             ISO = table2array(ISO);
-    
-            Input_Img = (Input_Img.*100)/ISO;
+            ISOref = 250; %min ISO from table
+
+            %Input_Img_spec = imread([rendering.shaderPath '\spec_texture.bmp']);
+
+            %normalise 
+            Input_Img = (Input_Img.*ISOref)/ISO;
+            
           
-            face_mask = rendering.face_mask; 
+            face_mask = rendering.face_mask(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end); %subsample mask
+            subfacemask =face_mask; % return this
     
             if rendering.debug
                 disp('Displaying unedited input image');
-                figure; imshow(lin2rgb(Input_Img)); title('unedited input im (iso normalised)');
+                figure; subplot(121); imshow(lin2rgb(Input_Img)); title('unedited input im (iso normalised)'); subplot(122); imshow(lin2rgb(true_Input)); title('true Input');
             end
             %% standard image loading 
             LUTs_Dims = size(rendering.LUTs);
@@ -392,7 +376,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(renderi
             Out_Mel = zeros(length(vecIm),1); % output 2D melanin map
             Out_Hem = zeros(length(vecIm),1); % output 2D hemoglabin map
             Out_Epth = zeros(length(vecIm),1); % output 2D Epidermal thickness map
-            Out_Img = zeros(length(vecIm),3); % output 3D equivalent of the rendered image
+            Out_Img = zeros(length(vecIm),3); % output 3D equivalent of the renderinged image
             Out_Beta = Out_Epth; 
     
             
@@ -420,15 +404,27 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(renderi
                         distances = DeltaE_94_pix_to_Matrix1D(Pix_Lab_tmp, LUTs_Lab_vec); % distances between pixel in the image and current lookup table
                         [tmp_min, linear_index] = min(distances(:)); % find the minimum distance and its linear index
                         [beta_eum, Best_K, Best_M, Best_N] = ind2sub(size(rendering.LUTs), linear_index); % convert linear index to subscripts
+                        
+%                     if rendering.fixBandK 
+%                         %set beta mel to be fixed
+%                         beta_eum = beta_eum_mode; 
+%                         % set epidermal to be between 3 and 11 mm
+%                         if Best_K < 1 % these correspond to the sampling indices of the LUTs not the actual values
+%                             Best_K = 1;
+%                         elseif Best_K > 9  
+%                             Best_K = 9;
+%                         end
+%                     end
     
                         Out_Img(maskCorrespondence(i),:) = LUT_vec(linear_index, :); % retrieve the corresponding value from the vectorized LUT
                         Out_Mel(maskCorrespondence(i)) = rendering.Mel_sampling(Best_M); % storing the best Mel_sampling into Output Mel
                         Out_Hem(maskCorrespondence(i)) = rendering.Hem_sampling(Best_N);
                         Out_Epth(maskCorrespondence(i)) = rendering.Epth_sampling(Best_K);
                         Out_Beta(maskCorrespondence(i)) =  rendering.Beta_sampling(beta_eum);
-    
-                    progress = i / length(vecIm) * 100;
-                    waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', rendering.subj_id_string, progress));
+                        progress = i / length(vecIm) * 100;
+                    if mod(round(progress,2),0.1) == 0 %only every whole perc to speed up
+                        waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', rendering.subj_id_string, progress));
+                    end 
             end
             
             close(progressBar);
@@ -441,7 +437,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(renderi
             Out_Img = reshape(Out_Img, R, C, 3);
     
             if rendering.debug
-                disp('Displaying output rendered texture');
+                disp('Displaying output renderinged texture');
                 figure;    imshow(uint8((Out_Img.^(1/2.2))*255)); title('Output Rendered texture');
                 disp('Displaying melanin map');
                 figure;    imagesc(Out_Mel); axis 'image'; title('Melanin map');
@@ -453,6 +449,28 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(renderi
                 figure;    imagesc(Out_Beta); axis 'image'; title('Beta ratio mix map');
             end
     
-            save(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName,'.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
+            save(strcat(rendering.pigPath, rendering.subj_id_string, '_newMapsISONorm', rendering.fileHandle, '.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
             disp('Maps saved');
+            toc 
+
+            
 end
+
+function sub = getBeta(rendering)
+                %get the modal beta value from the permID
+                %load the original maps
+
+                load(strcat(rendering.pigPath, rendering.subj_id_string, '_newMapsISONorm.mat'));
+
+                % load the mask for the face
+                face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp'));
+                face_mask = face_mask(:,:,2)>0;
+
+                % get the mode of the beta values
+                beta_mode = mode(Out_Beta(face_mask),'all');
+
+                % compare to samples
+                sub = find(beta_mode==rendering.Beta_sampling);
+
+                % we encapulate this in a function to avoid having to overwrite the maps
+            end

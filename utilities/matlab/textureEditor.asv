@@ -56,9 +56,9 @@ addpath(meshPath);
 addpath(pigPath);
 
 
-subsampling_factor_img = 1; % subsampling factor for the image for debugging purposes
+subsampling_factor_img = 30; % subsampling factor for the image for debugging purposes
 
-debug = 1; % Set debug to 1 to enable debug statements
+debug = 0; % Set debug to 1 to enable debug statements
 
 % normalise the textures
 %load the csv with ISO values
@@ -73,7 +73,7 @@ subjects = subjects';
 options = fileread(strcat(currentDir,'utilities\\text\\options.txt'));
 
 repeat = options(1) =='1';
-repeat = 1;  
+repeat=1 
 
 fixBandK = options(2)=='1'; 
 
@@ -86,7 +86,7 @@ rendering = struct('subj', 0, 'subj_id_string',0, ...
     'subsampling_factor_img', subsampling_factor_img, 'face_mask', [], 'debug', debug, 'fixBandK', fixBandK, 'repeat', repeat, 'fileHandle', fileHandle, 'pathHandle', pathHandle, 'fileName', fileName);
 
 %%
-for subj =subjects
+for subj = subjects
     rendering.subj_id_string = ['S' num2str(subj, '%03d')];
 
     % check whether maps are precalculated
@@ -95,9 +95,8 @@ for subj =subjects
     rendering.shaderPath = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\', rendering.subj_id_string, '\shader\');
     addpath(rendering.shaderPath);
     rendering.face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp')); 
-   
     rendering.face_mask = rendering.face_mask(:,:,2)>0;
-     rendering.face_mask = rendering.face_mask(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end);
+    
 %%
     %mapName = strcat(rendering.pigPath, rendering.subj_id_string, '_newMapsISONorm.mat');
     %check for pig maps
@@ -105,8 +104,8 @@ for subj =subjects
         disp('Repeat flag set');
         disp(strcat('Inverse rendering in progress for subject: ', rendering.subj_id_string));
         [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rendering(rendering);
-    end 
-    %%
+    end
+
     if fixBandK % if we want to fix the beta and K values
         rendering = loadOldMapsandEdit(rendering);
         Out_Mel = rendering.Out_Mel;
@@ -229,7 +228,7 @@ function distance_94=DeltaE_94_pix_to_Matrix1D(Lab1, M_Lab2)
     
     distance_94 = sqrt( ((delta_L)/(kl*Sl)).^2 + ((delta_Cab)/(kc*Sc)).^2 + ((delta_Hab)/(kh*Sh)).^2); 
 end
-%% 
+%%
 function rendering = loadOldMapsandEdit(rendering) % fix old maps
     %load the old maps
 
@@ -240,6 +239,8 @@ function rendering = loadOldMapsandEdit(rendering) % fix old maps
     load(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName,'.mat'));
     
     disp('Old Maps loaded');
+
+    %load("C:\Users\tw1700\Downloads\Code_chromophores_estimation\data\inverse_rendering_data.mat"); 
 
     if rendering.debug
         Input_Img = imread([rendering.dataSetPath  rendering.subj_id_string  '\shader\diff_texture.bmp']); 
@@ -315,41 +316,30 @@ function rendering = loadOldMapsandEdit(rendering) % fix old maps
     
 
 end
-%%
-function sub = getBeta(rendering)
-                %get the modal beta value from the permID
-                %load the original maps
-
-                load(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName,'.mat'));
-                
-
-                % get the mode of the beta values
-                beta_mode = mode(Out_Beta(rendering.face_mask),'all');
-
-                % compare to samples
-                sub = find(beta_mode==rendering.Beta_sampling);
-
-                % we encapulate this in a function to avoid having to overwrite the maps
-end
 
 function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rendering(rendering)
-
+            tic
             %load image 
             Input_Img = imread([rendering.shaderPath '\diff_texture.bmp']); 
             Input_Img = (double(Input_Img(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end,:))./255).^2.2; % subsample the image and convert to linear space
-    
+            true_Input = Input_Img;
             %normalise ISOs
             ISO = rendering.isoValues(rendering.subj +1,2);
             ISO = table2array(ISO);
-    
-            Input_Img = (Input_Img.*100)/ISO;
+            ISOref = 250; %min ISO from table
+
+            %Input_Img_spec = imread([rendering.shaderPath '\spec_texture.bmp']);
+
+            %normalise 
+            Input_Img = (Input_Img.*ISOref)/ISO;
+            
           
             face_mask = rendering.face_mask(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end); %subsample mask
-            subfacemask = face_mask; 
+            subfacemask =face_mask; % return this
     
             if rendering.debug
                 disp('Displaying unedited input image');
-                figure; imshow(lin2rgb(Input_Img)); title('unedited input im (iso normalised)');
+                figure; subplot(121); imshow(lin2rgb(Input_Img)); title('unedited input im (iso normalised)'); subplot(122); imshow(lin2rgb(true_Input)); title('true Input');
             end
             %% standard image loading 
             LUTs_Dims = size(rendering.LUTs);
@@ -368,11 +358,11 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
             Out_Mel = zeros(length(vecIm),1); % output 2D melanin map
             Out_Hem = zeros(length(vecIm),1); % output 2D hemoglabin map
             Out_Epth = zeros(length(vecIm),1); % output 2D Epidermal thickness map
-            Out_Img = zeros(length(vecIm),3); % output 3D equivalent of the rendered image
+            Out_Img = zeros(length(vecIm),3); % output 3D equivalent of the renderinged image
             Out_Beta = Out_Epth; 
     
             
-            face_mask = reshape(rendering.face_mask,[],1);
+            face_mask = reshape(face_mask,[],1);
     
             delta_lambda=10;
             Light_XYZ = Spec_To_XYZ(rendering.light_spectrum, rendering.CMFs, delta_lambda); % converting the light spactrum to its XYZ values
@@ -402,9 +392,10 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
                         Out_Hem(maskCorrespondence(i)) = rendering.Hem_sampling(Best_N);
                         Out_Epth(maskCorrespondence(i)) = rendering.Epth_sampling(Best_K);
                         Out_Beta(maskCorrespondence(i)) =  rendering.Beta_sampling(beta_eum);
-    
-                    progress = i / length(vecIm) * 100;
-                    waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', subj_id_string, progress));
+                        progress = i / length(vecIm) * 100;
+                    if mod(round(progress,2),0.1) == 0 %only every whole perc to speed up
+                        waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', rendering.subj_id_string, progress));
+                    end 
             end
             
             close(progressBar);
@@ -429,6 +420,28 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
                 figure;    imagesc(Out_Beta); axis 'image'; title('Beta ratio mix map');
             end
     
-            save(strcat(pigPath, subj_id_string, '_newMaps.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
+            save(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName, '.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
             disp('Maps saved');
+            toc 
+
+            
 end
+
+function sub = getBeta(rendering)
+                %get the modal beta value from the permID
+                %load the original maps
+
+                load(strcat(rendering.pigPath, rendering.subj_id_string, fileName,.mat'));
+
+                % load the mask for the face
+                face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp'));
+                face_mask = face_mask(:,:,2)>0;
+
+                % get the mode of the beta values
+                beta_mode = mode(Out_Beta(face_mask),'all');
+
+                % compare to samples
+                sub = find(beta_mode==rendering.Beta_sampling);
+
+                % we encapulate this in a function to avoid having to overwrite the maps
+            end
