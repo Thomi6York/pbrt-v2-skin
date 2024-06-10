@@ -33,7 +33,8 @@ LightingCase = 1; # case to render
 cacheFile = ".\\results\\experiments\\reRunCheck\\cache\\cache_S000normTexISONorm.txt"
 tex = "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\results\\experiments\\reRunCheck\\normTex\\S000normTexISONorm.exr"
 meshPath = "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\scenes\\geometry\\processed\\S000mesh.pbrt"
-outFilePath = "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\results\\experiments\\transmissivityRoughnessReflectivity\\"
+#normals should now be added to the core function
+outFilePath = "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\results\\experiments\\transmissivityRoughnessReflectivityWNormals\\"
 
 #check output file path exists
 if not os.path.exists(outFilePath):

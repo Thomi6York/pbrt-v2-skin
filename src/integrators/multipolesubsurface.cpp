@@ -288,7 +288,7 @@ Spectrum MultipoleSubsurfaceIntegrator::Li(const Scene *scene, const Renderer *r
 		//L += ((INV_PI * Ft) * Mo * Pow(bssrdf->albedo(), mix)).Clamp(0.f);
         PBRT_SUBSURFACE_FINISHED_OCTREE_LOOKUP();
     }
-	if (!showIrradiancePoints) {
+	if (!showIrradiancePoints) { // this is if it isn't parsed 
 		L += UniformSampleAllLights(scene, renderer, arena, p, n,
 			wo, isect.rayEpsilon, ray.time, bsdf, sample, rng, lightSampleOffsets,
 			bsdfSampleOffsets);

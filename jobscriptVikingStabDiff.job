@@ -1,0 +1,63 @@
+#interactive jupyter jobscript
+
+# for simplicty I assume you already ssh'd into viking (ssh user@viking.york.ac.yk), and are running the notebook on a viking workspace in vs code ...
+# (though there's a small section at the end for if you want to run the notebook on your local machine/browser)
+
+srun --time=03:00:00 --partition=gpu --gres gpu:1 --mem=64G --exclude=gpu14 --pty /bin/bash
+
+module load Miniconda3/23.5.2-0 #load the miniconda module and add your virtual env here if you have one
+
+source activate StabDiffEnv # replace StabDiffEnv with your virtual env name
+
+module load JupyterLab/3.1.6-GCCcore-11.2.0 # load the jupyter lab module
+
+#user = tw1700 #replace tw1700 with your username if you want to forward the port to your local machine
+
+#return gpu node name
+echo hostname
+
+# assign hostname to a variable
+hostname=$(hostname)
+
+jupyter notebook --no-browser
+
+#open a second terminal and run the following command to forward the port
+for i in $(seq 8889 8899); do
+    viking.york.ac.uk ssh -N -L $i:localhost:8888 $hostname
+
+    #otherwise clear the port
+    # unoccupy the port if it is already in use
+    fuser -k $i/tcp
+    if [ $? -eq 0 ]; then
+        echo "SSH connection successful on port $i"
+
+        #assign the port number to a variable
+        port=$i
+        break
+    fi
+done
+
+## an example if you wanted to forward from your machine 
+#for j in $(seq 8889 8899); do
+    #for i in $(seq 8889 8899); do
+    #    ssh -L $j:localhost:$i $user@viking.york.ac.uk ssh -N -L $i:localhost:8888 $hostname
+    # unoccupy the port if it is already in use
+    # fuser -k $i/tcp
+    # fuser -k $j/tcp 
+    #    if [ $? -eq 0 ]; then
+    #        echo "SSH connection successful on port $i"
+
+            #assign the port number to a variable
+    #        port=$i
+    #        break
+    #    fi
+    #done
+
+
+# open the jupyter notebook you want to connect to in vs code
+# or open a browser and go to localhost:port (requires local shh port forwarding)
+
+# just rember to replace 8888 in the terminals url template with the port number you have assigned...
+# (the viking one if vs code, the local one if you are running the notebook on your local machine/browser)
+
+#ssh -L 8888:localhost:8889 viking.york.ac.uk ssh -N -L 8889:localhost:8888 node112

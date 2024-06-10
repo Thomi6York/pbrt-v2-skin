@@ -14,23 +14,23 @@ import csv
 
 #dataset at: C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\Practical Rendering\Skin_code\data\ICT_3DRFE_mod
 
-sample = 30; #default but will always round up to a power of 2
+sample = 8; #default but will always round up to a power of 2
 
 
-subjects = [0]; #subjects to render -- these are the subjects we are inverse rendering
+subjects = [0,5]; #subjects to render -- these are the subjects we are inverse rendering
 #subjects = [0,3,5,7,22]; 
 #subjects =22; 
 
-perms = '1' #set to 'all' to render all permutations, otherwise select permID's to render
+perms = 'all' #set to 'all' to render all permutations, otherwise select permID's to render
  #perms ['1','2','3','4'] #set to 'all' to render all permutations, otherwise select permID's to render
 
 #set options for the script
-batchRenderGT = False #will render all the GT scenes in the batch script
+batchRenderGT = True #will render all the GT scenes in the batch script
 reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
 rewriteCachfiles = False #if you want to rewrite the cache files
 writeSceneFileGT = True
 
-permuteScene = True # avoid all perms options 
+permuteScene = False # avoid all perms options 
 generatePermTextures = False; batchRenderPerms = False; noSpecPerms = False
 
 NoSpec = False #render the NoSpec scenes
@@ -39,14 +39,14 @@ LightingCase = 1; # 1 is full file, 2 is without overhead lighting
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
 SkipMatlab = True #skip the matlab script and just render the scenes for debugging
 
-pathHandle = 'reRunCheck\\' #customise this for output name -- don't use end
+pathHandle = 'reRunWNormsandCorrectSpec\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
 
-kr1 = True #render with homogenous specularity of 1
+kr1 = False #render with homogenous specularity of 1
 
 
 fileName = 'normTex' + fileHandle # add extensions later
-customName = '30SampleSpecKR1' #custom name for the output file  
+customName = 'GammaCorrectedNormals' #custom name for the output file  
 outFileName = fileName + customName # to rerun with diff output name
 
 
@@ -186,7 +186,7 @@ def GroundTruthRender(pathInfo,options):
                     if permID == "" and subjNumStr in subjects:
                         print("Writing scene files and batch script.")
                         #process the file and write a basic scene file
-                        overwriteALL, skipAll, scene_command = processFiles(pathInfo, cache, batch_script, LightingCase, subjects, sample, overwriteALL, skipAll, fileHandle)
+                        overwriteALL, skipAll, scene_command = processFiles(pathInfo, cache, batch_script, LightingCase, subjects, sample, overwriteALL, skipAll)
                         scene_file = os.path.join(scenePath, scene_name)
                         # write to batch file
                         f.write(scene_command)
@@ -247,6 +247,14 @@ def renderPerms(pathInfo,options):
     matlab_script = ".\\utilities\\matlab\\textureEditorPermuter.m"
     if generatePermTextures == True and options["SkipMatlab"] == False:
         subprocess.run(["matlab", "-batch", "run('{}')".format(matlab_script)])
+
+    #check the perms scene file dir exists
+    if not os.path.exists(f"{pathInfo['scenePath']}\\perms\\"):
+        os.makedirs(f"{pathInfo['scenePath']}\\perms\\")
+
+    #check the render dir exists
+    if not os.path.exists(f"{pathInfo['renderPath']}\\perms\\"):
+        os.makedirs(f"{pathInfo['renderPath']}\\perms\\")
 
     with open(batch_script1, "w") as f1: 
         with open(batch_script2, "w") as f2: 

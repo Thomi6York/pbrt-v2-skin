@@ -1,5 +1,8 @@
 %%
-
+%% Note to self -- this is for inverse rendering using the shading for eyebrows
+% manually reasign options since it'll load whatever is being used from the
+% last run 
+%% 
 close all 
 clear all
 
@@ -73,7 +76,7 @@ subjects = subjects';
 options = fileread(strcat(currentDir,'utilities\\text\\options.txt'));
 
 repeat = options(1) =='1';
-repeat = 1;  
+
 
 fixBandK = options(2)=='1'; 
 
@@ -85,8 +88,28 @@ rendering = struct('subj', 0, 'subj_id_string',0, ...
     'Mel_sampling', Mel_sampling, 'Hem_sampling', Hem_sampling, 'Epth_sampling', Epth_sampling, 'Beta_sampling', Beta_sampling, ...
     'subsampling_factor_img', subsampling_factor_img, 'face_mask', [], 'debug', debug, 'fixBandK', fixBandK, 'repeat', repeat, 'fileHandle', fileHandle, 'pathHandle', pathHandle, 'fileName', fileName);
 
+%% change stuff here 
+
+rendering.TexPath = 'C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\matlab\'; % just save here for demo
+rendering.debug=1; 
+rendering.fixBandK =1; 
+repeat = 1; 
+rendering.pigPath = 'C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\matlab\';
+rendering.subsampling_factor_img = 10; 
+
+if exist(rendering.pigPath, 'file')
+    disp('pigPath file found')
+else 
+    disp('cannot find paths')
+end
+
+if exist(rendering.TexPath, 'file')
+    disp('TexPath file found')
+else 
+    disp('cannot find paths')
+end
 %%
-for subj =subjects
+for subj = 0 
     rendering.subj_id_string = ['S' num2str(subj, '%03d')];
 
     % check whether maps are precalculated
@@ -94,7 +117,9 @@ for subj =subjects
     % load the mask for the face
     rendering.shaderPath = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\', rendering.subj_id_string, '\shader\');
     addpath(rendering.shaderPath);
-    rendering.face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp')); 
+    %rendering.face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp')); 
+    % load in eyebrows mask instead
+    rendering.face_mask = exrread(strcat(rendering.shaderPath,rendering.subj_id_string,'_E00_MaskEyebrow.exr'));
    
     rendering.face_mask = rendering.face_mask(:,:,2)>0;
      rendering.face_mask = rendering.face_mask(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end);
@@ -104,7 +129,7 @@ for subj =subjects
     if repeat % only repeat if we want too
         disp('Repeat flag set');
         disp(strcat('Inverse rendering in progress for subject: ', rendering.subj_id_string));
-        [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rendering(rendering);
+        [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(rendering);
     end 
     %%
     if fixBandK % if we want to fix the beta and K values
@@ -176,7 +201,7 @@ for subj =subjects
         figure; imshow(normIm);title('transformed for rendering');
     end
     
-    exrwrite(normIm,strcat(rendering.TexPath, rendering.subj_id_string, fileName, '.exr')); %write to the rendering directory 
+    exrwrite(normIm,strcat(rendering.TexPath, rendering.subj_id_string, fileName, '.exr')); %write to the tex directory 
     if rendering.debug
         disp(strcat('Saving texture to ', rendering.TexPath, rendering.subj_id_string, fileName,  '.exr'));
     end
@@ -332,7 +357,7 @@ function sub = getBeta(rendering)
                 % we encapulate this in a function to avoid having to overwrite the maps
 end
 
-function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rendering(rendering)
+function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img] = inverse_rendering(rendering)
 
             %load image 
             Input_Img = imread([rendering.shaderPath '\diff_texture.bmp']); 
@@ -344,8 +369,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
     
             Input_Img = (Input_Img.*100)/ISO;
           
-            face_mask = rendering.face_mask(1:rendering.subsampling_factor_img:end,1:rendering.subsampling_factor_img:end); %subsample mask
-            subfacemask = face_mask; 
+            face_mask = rendering.face_mask; 
     
             if rendering.debug
                 disp('Displaying unedited input image');
@@ -372,7 +396,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
             Out_Beta = Out_Epth; 
     
             
-            face_mask = reshape(rendering.face_mask,[],1);
+            face_mask = reshape(face_mask,[],1);
     
             delta_lambda=10;
             Light_XYZ = Spec_To_XYZ(rendering.light_spectrum, rendering.CMFs, delta_lambda); % converting the light spactrum to its XYZ values
@@ -429,6 +453,6 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
                 figure;    imagesc(Out_Beta); axis 'image'; title('Beta ratio mix map');
             end
     
-            save(strcat(pigPath, subj_id_string, '_newMaps.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
+            save(strcat(rendering.pigPath, rendering.subj_id_string, rendering.fileName,'.mat'),"Out_Epth", "Out_Beta","Out_Hem","Out_Img","Out_Mel");
             disp('Maps saved');
 end

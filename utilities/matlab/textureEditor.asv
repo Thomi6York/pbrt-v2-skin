@@ -404,7 +404,7 @@ function [Out_Mel,Out_Hem,Out_Beta,Out_Epth,Out_Img, subfacemask] = inverse_rend
                         Out_Beta(maskCorrespondence(i)) =  rendering.Beta_sampling(beta_eum);
     
                     progress = i / length(vecIm) * 100;
-                    waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', rendering.subj_id_string, progress));
+                    waitbar(progress / 100, progressBar, sprintf('Inverse rendering for %s: %.2f%%', subj_id_string, progress));
             end
             
             close(progressBar);

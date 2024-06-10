@@ -148,7 +148,7 @@ void Material::Norm_From_Spectrum(const Reference<Texture<Spectrum> > &d,
 	dgEval.nn = Normalize((Normal)Cross(dgs.dpdu, dgs.dpdv) +
 		dv * dgs.dndv);
 
-  // all displacements are set to zero 
+  // all displacements are set to zero because we aren't bump mapping
   float uDisplace = 0.0f;
 	float vDisplace = 0.0f;
 	float displace = 0.0f;

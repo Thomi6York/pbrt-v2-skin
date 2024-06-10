@@ -68,6 +68,9 @@ def sceneEditor(params,pathInfo,LightingCase,sample=1):
                 "string wrap" "clamp" "float gamma" 1 "float scale" 1
             Texture "spec" "color" "imagemap" "string filename"  "{specTexturePath}"
                 "string wrap" "clamp" "float gamma" 1 "float scale" 1
+            Texture "norms" "color" "imagemap" "string filename" "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\.\\scenes\\PilotDataSet\\{subjNum}\\shader\\spec_normalFlipped.exr"
+            "string wrap" "clamp" "float gamma" 2.2 "float scale" 1 #implement normals
+
 
             AttributeBegin
                 Translate 0 1 -.35 # move up a bit
@@ -77,7 +80,7 @@ def sceneEditor(params,pathInfo,LightingCase,sample=1):
                 Material "layeredskin" "float roughness" 0.35 #0.35 is the paper value 
                                     "float nmperunit" 40e6 # nanometers per unit length in world space
                                     #"color Kr" [0 0 0] # no spec
-                                    
+                                    "texture normalmap"  "norms" #norms
                                     "color Kt" [0 0 0] # edit did little changing from 1 to zero  -- this is translucency; can't be seen with a black background
                                     # each layer's depth and index of refraction; units are in nanometers
 
@@ -252,11 +255,10 @@ def  getSubjects(options):
 
     return subjects
 
-def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1,overwriteALL=False,skipALL = False,handle = None):
+def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1,overwriteALL=False,skipALL = False):
     #check if we want to overwrite all files
     #set default handle to empty string
-    if handle == None:
-        handle = ""
+
     #with open(batch_script, "w") as f:
                             
     #remember paths are set relative to the pbrt file not the python script
@@ -278,17 +280,17 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
     renderDir = pathInfo["renderPath"]
     if permID == "" or permID == '':
         renderPath = f"{renderDir}{subjNum}"
-        scene_name = f"{subjNum}_{handle}.pbrt"
+        scene_name = f"{subjNum}_{outFileName}.pbrt"
         texture = f"{subjNum}{fileName}.exr" # get the texture
     else:
         renderPath = f"{renderDir}{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip"
-        scene_name = f"{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip{handle}.pbrt"
+        scene_name = f"{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip{outFileName}.pbrt"
         texture = f"{subjNum}PermID{permID}_{fileName}.exr" # get the texture 
     
 
     #add additional name if exists]
-    if handle != "":
-        renderPath = f"{renderPath}{handle}"
+    if outFileName != "":
+        renderPath = f"{renderPath}{fileName}"
     #append exr to render path
     renderPath = f"{renderPath}{outFileName}.exr"
 
@@ -306,7 +308,7 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
             "renderPath": renderPath,
             "albedoTexturePath": albedoTexturePath,
             "meshPath": f"{meshPath}{subjNum}mesh.pbrt",
-            "specTexturePath": f"{dataSetPath}{subjNum}\\shader\\spec_textureISONorm.exr" 
+            "specTexturePath": f"{dataSetPath}{subjNum}\\shader\\spec_textureISONormFlipped.exr" 
         }
 
         #check all renderPath assets exist
