@@ -58,7 +58,7 @@ addpath(pigPath);
 
 subsampling_factor_img = 30; % subsampling factor for the image for debugging purposes
 
-debug = 1; % Set debug to 1 to enable debug statements
+debug = 0; % Set debug to 1 to enable debug statements
 
 % normalise the textures
 %load the csv with ISO values
@@ -73,7 +73,6 @@ subjects = subjects';
 options = fileread(strcat(currentDir,'utilities\\text\\options.txt'));
 
 repeat = options(1) =='1';
-repeat=1 
 
 fixBandK = options(2)=='1'; 
 
