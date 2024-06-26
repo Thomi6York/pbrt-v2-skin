@@ -1,10 +1,10 @@
 subjects = [0,3,5,7,22];
 
 %load these in from the starting directory
-isoValues = readtable('CaptureISO_perSubject.csv');
+isoValues = readtable("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\csv\CaptureISO_perSubject.csv");
 
 %switch to the dataset
-cd("E:\pbrt-v2-skinPat\scenes\PilotDataSet\")
+cd("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\")
 
 for subj = subjects
     subj_id_string =  ['S' num2str(subj, '%03d')];
@@ -24,7 +24,7 @@ for subj = subjects
 
     
 
-    specular_image = lin2rgb(specular_image);
+    %specular_image = lin2rgb(specular_image);
 
     %display image for checking
     figure; imshow(specular_image); title('Normalised Specular Texture');

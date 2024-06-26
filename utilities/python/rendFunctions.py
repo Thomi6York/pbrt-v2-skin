@@ -69,7 +69,7 @@ def sceneEditor(params,pathInfo,LightingCase,sample=1):
             Texture "spec" "color" "imagemap" "string filename"  "{specTexturePath}"
                 "string wrap" "clamp" "float gamma" 1 "float scale" 1
             Texture "norms" "color" "imagemap" "string filename" "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\.\\scenes\\PilotDataSet\\{subjNum}\\shader\\spec_normalFlipped.exr"
-            "string wrap" "clamp" "float gamma" 2.2 "float scale" 1 #implement normals
+            "string wrap" "clamp" "float gamma" 1 "float scale" 1 #implement normals # should all be gamma decoded exrs
 
 
             AttributeBegin

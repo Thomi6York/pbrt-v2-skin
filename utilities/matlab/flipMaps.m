@@ -2,6 +2,7 @@
 
 subjects = [0,3,5,7,22];
 
+
 %switch to the dataset
 cd(".\scenes\PilotDataSet\")
 %%
@@ -19,6 +20,9 @@ for subj = subjects
     %display image for checking
     figure; imshow(specular_image); title('Flipped Specular Texture');
     figure; imshow(normal_image); title('Flipped Normal Map');
+
+    %ungamma encode
+    normal_image = rgb2lin(normal_image);
 
     %save the flipped texture as an .exr
     exrwrite(specular_image, [subj_id_string '\shader\spec_textureISONormFlipped.exr']);
