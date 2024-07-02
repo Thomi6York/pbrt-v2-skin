@@ -69,12 +69,12 @@ subjects = readmatrix(strcat(currentDir,'utilities\\csv\\subjects.csv'));
 subjects = subjects'; 
 
 
-%load repeat options txt file
-options = fileread(strcat(currentDir,'utilities\\text\\options.txt'));
+%% load repeat options csv file
+options = readcell(strcat(currentDir,'utilities\\text\\options.csv'));
 
-repeat = options(1) =='1';
-
-fixBandK = options(2)=='1'; 
+repeat = logical(options{2,2});
+fixBandK = logical(options{2,2});
+scaleType = options{3,2};
 
 %% append rendering stuff into a struct for neatness 
 

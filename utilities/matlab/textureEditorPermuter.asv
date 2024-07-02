@@ -28,9 +28,9 @@ isoValues = readmatrix(strcat(currentDir,'utilities\\csv\\CaptureISO_perSubject.
 subjects = readmatrix(strcat(currentDir,'utilities\\csv\\subjects.csv'));
 subjects = subjects'; 
 
-% create an Additive scale
-scaleType = 'Multiplicative'; % set to Multiplicative for now
-%scaleType = 'Additive'; % set to Additive for now
+% create an additive scale
+scaleType = 'multiplicative'; % set to multiplicative for now
+%scaleType = 'additive'; % set to additive for now
 
 %% Load chrom path stuff
 load(".\data\LUTs_luxeon_CIEcmfwithbeta.mat");
@@ -99,9 +99,9 @@ addpath(pigPath);
 %% load repeat options txt file
 options = readcell(strcat(currentDir,'utilities\\text\\options.csv'));
 
-repeat = logical(options{2,2});
-fixBandK = logical(options{2,2});
-scaleType = options{3,2};
+repeat = bool(options{1,2});
+fixBandK = bool(options{2,2}); 
+scaleType = options{2,3};
 
 fileNameHandleIn = fileHandle;
 %fileNameHandleIn =''; % jsut to get rid of it for now
@@ -186,10 +186,10 @@ for subj = subjects %subjects
 
     % we want to permute conditions - add and subtract 1 std deviation from the pigment maps
     switch scaleType
-        case "Additive"
+        case "additive"
             values = [0,mel_std, - mel_std;0, hem_std, - hem_std;];
             std_ID = [0,1,-1;0,1,-1;];
-        case "Multiplicative"
+        case "multiplicative"
             % use a set of perms which are 0.75 and 1.25 as well as 1
             values = [1,0.5, 2; 1, 0.5, 2;];
             std_ID = [0,1,2;0,1,2;];
@@ -221,9 +221,9 @@ for subj = subjects %subjects
     perms = unique(perms, 'rows');
 
     switch scaleType
-        case "Additive"
+        case "additive"
             save(strcat(rendering.permPathPig, rendering.subj_id_string, 'AdditivePerms.mat'), 'perms','std_IDs' ,'mel_std','hem_std'); %save perms for ref
-        case "Multiplicative"
+        case "multiplicative"
             save(strcat(rendering.permPathPig, rendering.subj_id_string, 'MultiplicativePerms.mat'), 'perms','std_IDs' ,'mel_std','hem_std'); %save perms for ref
     end
     save(strcat(rendering.permPathPig, rendering.subj_id_string, 'perms.mat'), 'perms','std_IDs' ,'mel_std','hem_std'); %save perms for ref
@@ -238,12 +238,12 @@ for subj = subjects %subjects
         Out_Mel2 = Out_Mel;
         Out_Hem2 = Out_Hem;
         
-        % if the case is Additive, add the values to the pigment maps
+        % if the case is additive, add the values to the pigment maps
         switch scaleType
-            case "Additive"
+            case "additive"
                 Out_Mel2(face_mask) = Out_Mel(face_mask) + perms(i,1);
                 Out_Hem2(face_mask) = Out_Hem(face_mask) + perms(i,2);
-            case "Multiplicative"
+            case "multiplicative"
                 % use a set of perms which are 0.75 and 1.25 as well as 1
                 Out_Mel2(face_mask) = Out_Mel(face_mask) * perms(i,1);
                 Out_Hem2(face_mask) = Out_Hem(face_mask) * perms(i,2);
@@ -391,18 +391,18 @@ function normIm= texNormalize(rendering)
     end
 
     switch rendering.scaleType
-        case "Additive"
+        case "additive"
             exrwrite(normIm,strcat(rendering.permPathTex, rendering.subj_id_string, rendering.fileNameHandleOut,  '_Additive.exr')); %write to the rendering directory 
-        case "Multiplicative"
+        case "multiplicative"
             exrwrite(normIm,strcat(rendering.permPathTex, rendering.subj_id_string, rendering.fileNameHandleOut,  '_Multiplicative.exr')); %write to the rendering directory 
     end
     %exrwrite(normIm,strcat(rendering.permPathTex, rendering.subj_id_string, rendering.fileNameHandleOut,  '.exr')); %write to the rendering directory 
     
     % Write cache file
     switch rendering.scaleType
-        case "Additive"
+        case "additive"
             cacheFile = fullfile(rendering.permPathCache, ['cache_' rendering.subj_id_string rendering.fileNameHandleOut '_Additive.txt']);
-        case "Multiplicative"
+        case "multiplicative"
             cacheFile = fullfile(rendering.permPathCache, ['cache_' rendering.subj_id_string rendering.fileNameHandleOut '_Multiplicative.txt']);
     end
   

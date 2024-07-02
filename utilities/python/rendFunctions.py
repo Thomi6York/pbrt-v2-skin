@@ -171,7 +171,7 @@ def  createPaths(pathInfo):
     #loop through the pathInfo object and create paths if they don't exist
     for key, value in pathInfo.items():
         
-        if key == "pathHandle" or key == "fileHandle":
+        if key == "pathHandle" or key == "fileHandle" or key == "outFileName" or key == "fileName":
             continue
         elif not os.path.exists(value):
             os.makedirs(value)
@@ -179,9 +179,6 @@ def  createPaths(pathInfo):
         else:
             print(f"{key} path already exists.")
        
-       
-        
-
         # Convert pathInfo dictionary to a JSON object
         json_object = json.dumps(pathInfo)
 
@@ -202,7 +199,8 @@ def readCacheFile(cache_file,subjects):
                 "hemConc": 0,
                 "betaConc": 0,
                 "epThickness": 0,
-                "permID": ""
+                "permID": "",
+                "cacheScaleType": ""
             }
             return params
         else:
@@ -213,6 +211,10 @@ def readCacheFile(cache_file,subjects):
             epThickness = float(lines[8].split(":")[1].strip()) #this is epth
             epThickness = epThickness*0.001 #scale 
             permID = lines[9].split(":")[1].strip() #perm ID 
+            if len(lines) > 10:
+                scaleType = lines[10].split(":")[1].strip()
+            else: 
+                scaleType = ""
 
             #create a single object for all values
             params = {
@@ -221,7 +223,8 @@ def readCacheFile(cache_file,subjects):
                 "hemConc": hemConc,
                 "betaConc": betaConc,
                 "epThickness": epThickness,
-                "permID": permID
+                "permID": permID,
+                "cacheScaleType": scaleType
             }
             return params
 
@@ -255,7 +258,7 @@ def  getSubjects(options):
 
     return subjects
 
-def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1,overwriteALL=False,skipALL = False):
+def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1,overwriteALL=False,skipALL = False, scaleType = ""):
     #check if we want to overwrite all files
     #set default handle to empty string
 
@@ -282,10 +285,10 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
         renderPath = f"{renderDir}{subjNum}"
         scene_name = f"{subjNum}_{outFileName}.pbrt"
         texture = f"{subjNum}{fileName}.exr" # get the texture
-    else:
-        renderPath = f"{renderDir}{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip"
-        scene_name = f"{subjNum}_{melConc}_{hemConc}_PermNo_{permID}_Manip{outFileName}.pbrt"
-        texture = f"{subjNum}PermID{permID}_{fileName}.exr" # get the texture 
+    else: #for permuted textures
+        renderPath = f"{renderDir}{subjNum}_PermNo_{permID}_Manip"
+        scene_name = f"{subjNum}_PermNo_{permID}_Manip{outFileName}.pbrt"
+        texture = f"{subjNum}PermID{permID}_{fileName}_{scaleType}.exr" # get the texture 
     
 
     #add additional name if exists]

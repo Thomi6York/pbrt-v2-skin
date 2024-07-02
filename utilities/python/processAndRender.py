@@ -24,14 +24,16 @@ subjects = [0,5]; #subjects to render -- these are the subjects we are inverse r
 perms = 'all' #set to 'all' to render all permutations, otherwise select permID's to render
  #perms ['1','2','3','4'] #set to 'all' to render all permutations, otherwise select permID's to render
 
+scaleType = 'Multiplicative' #multiplicative or additive
+
 #set options for the script
-batchRenderGT = True #will render all the GT scenes in the batch script
+batchRenderGT = False #will render all the GT scenes in the batch script
 reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
 rewriteCachfiles = False #if you want to rewrite the cache files
-writeSceneFileGT = True
+writeSceneFileGT = False
 
-permuteScene = False # avoid all perms options 
-generatePermTextures = False; batchRenderPerms = False; noSpecPerms = False
+permuteScene = True# avoid all perms options 
+generatePermTextures = True; batchRenderPerms = True; noSpecPerms = False
 
 NoSpec = False #render the NoSpec scenes
 
@@ -46,8 +48,9 @@ kr1 = False #render with homogenous specularity of 1
 
 
 fileName = 'normTex' + fileHandle # add extensions later
-customName = 'GammaCorrectedNormals' #custom name for the output file  
-outFileName = fileName + customName # to rerun with diff output name
+customName = 'LinearTexturesDoubleHalfScaling' #custom name for the output file  
+outFileName = fileName + customName + scaleType # to rerun with diff output name
+
 
 
 expName = fileHandle
@@ -110,9 +113,14 @@ options = {
     "noSpecPerms": noSpecPerms,
     "sample": sample,
     "kr1": kr1,
-
-   
+    "scaleType": scaleType,
 }
+
+#write an options file to store the inverse render option
+with open(".\\utilities\\text\\options.csv", "w") as f:
+    f.write(f"repeat,{str(int(reinverseRenderAll))}\n")
+    f.write(f"fixbandk,{str(int(fixBandEnd))}\n")
+    f.write(f"scaleType, {scaleType}\n")
 
 #add path to object
 pathInfo = {
@@ -127,7 +135,6 @@ pathInfo = {
     "pathHandle": pathHandle,
     "fileName": fileName,
     "outFileName": outFileName
-
 }
 
 
@@ -143,9 +150,7 @@ def GroundTruthRender(pathInfo,options):
         print("Re-inverse rendering all subjects.")
     else:
         print("Skipping re-inverse rendering.")
-    #write an options file to store the inverse render option
-    with open(".\\utilities\\text\\options.txt", "w") as f:
-        f.write(f"{str(int(reinverseRenderAll))}{str(int(fixBandEnd))}\n")
+    
 
     #handles creating paths        
     createPaths(pathInfo); 
@@ -234,6 +239,7 @@ def renderPerms(pathInfo,options):
     subjects = getSubjects(options)
     createPaths(pathInfo)
     sample = options["sample"]
+    scaleType = options["scaleType"]
 
     overwriteALL = False
     skipAll = False
@@ -266,6 +272,7 @@ def renderPerms(pathInfo,options):
                 subjNumInt = int(subjNumStr[2:])
                 permID = params["permID"]                       
                 perms = options["perms"]
+                cacheScaleType = params["cacheScaleType"]
 
                 #loop through extreme pigment manipulations -- 4 permutations
                 if permuteScene == True:
@@ -283,15 +290,15 @@ def renderPerms(pathInfo,options):
                     #loop through the permutations in the cache file's and generate scenes 
                     
                     #only process the file if it matches the current subject and permID is not empty
-                    if (perms == 'all' and subjNumStr in subjects)|(subjNumStr in subjects and permID in perms):
+                    if (perms == 'all' and subjNumStr in subjects and cacheScaleType==scaleType)|(subjNumStr in subjects and permID in perms and cacheScaleType == scaleType):
  
                         print(f"Processing permutation {permID} for subject {subjNumStr}.")
     
-                        overwriteALL, skipAll, scene_command = processFiles(permPathInfo, cache, batch_script1,LightingCase,subjects, sample, overwriteALL, skipAll, fileHandle)
+                        overwriteALL, skipAll, scene_command = processFiles(permPathInfo, cache, batch_script1,LightingCase,subjects, sample, overwriteALL, skipAll, scaleType)
                         #write to batch file
                         f1.write(scene_command)
         
-                    if (perms == 'all' and subjNumStr in subjects and options["noSpecPerms"] ==True)|(options["noSpecPerms"] == True and subjNumStr in subjects and permID == perms):
+                    if (perms == 'all' and subjNumStr in subjects and options["noSpecPerms"] ==True and cacheScaleType==scaleType)|(options["noSpecPerms"] == True and subjNumStr in subjects and permID == perms and cacheScaleType==scaleType):
                         batch_script2 = '.\\utilities\\batch\\NoSpecPerms.bat'
                         # copy the scene file but comment out the NoSpec texture and change the output path
                         scene_name =  f"NoSpec{subjNumStr}_PermID{permID}.pbrt"
