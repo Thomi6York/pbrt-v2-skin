@@ -261,6 +261,14 @@ for subj = subjects %subjects
         Out_Epth = reshape(Out_Epth,[],1);
         Out_Beta = reshape(Out_Beta,[],1);
 
+        bestBeta = unique(Out_Beta(face_mask)); %get the unique beta values in the face mask - should be homogenous 
+        
+        % set up interp data structs 
+        interpData = struct('Hem_sampling', Hem_sampling, 'Epth_sampling', Epth_sampling, 'Mel_sampling', Mel_sampling, 'Out_Hem', Out_Hem2, 'Out_Epth', Out_Epth, 'Out_Mel', Out_Mel2, 'bestBeta', bestBeta);
+
+        % use interp3 
+        interpRGBs = interpLUT(interpData);
+
         %get the index of the nearest value in the sampling array
         [~,melInd] = min(abs(Out_Mel2 - Mel_sampling));
         [~,hemInd] = min(abs(Out_Hem2 - Hem_sampling));
@@ -268,11 +276,14 @@ for subj = subjects %subjects
         [~,epthInd] = min(abs(Out_Epth-Epth_sampling),[],2);
 
         % calibrate the maps to the sampling values 
-        Out_Mel2(face_mask1D) = Mel_sampling(melInd(face_mask1D));
-        Out_Hem2(face_mask1D) = Hem_sampling(hemInd(face_mask1D));
+        %Out_Mel2(face_mask1D) = Mel_sampling(melInd(face_mask1D));
+        %Out_Hem2(face_mask1D) = Hem_sampling(hemInd(face_mask1D));
         %out epth and beta are the same 
 
-       LUTSDims = size(LUTs);
+      
+        
+
+        LUTSDims = size(LUTs);
     
         LUTs1D= reshape(LUTs, [], 3); 
         
@@ -420,5 +431,58 @@ function normIm= texNormalize(rendering)
     fprintf(fid, 'Scale type: %s\n', rendering.scaleType);
     fclose(fid);
     disp(['Wrote cache file to ' cacheFile]);
+
+end
+
+
+function Vq = interpLUT(interpData); 
+    
+    % get current directory
+    ogPath = pwd;
+
+    chromPath = "C:\Users\tw1700\Downloads\Code_chromophores_estimation\";
+    cd(chromPath);
+    light_spectrum = light_spectrum(21:10:321,2);
+
+    % should have vectors of query points, with sampling forming the original sampling points
+    % and the LUTs as the values to interpolate between
+
+    LUTCrop = LUTs(:,1:9,:,:,:);
+
+    % get original sample points
+    xi = interpData.Hem_sampling;
+    yi = interpData.Epth_sampling(1:9);
+    zi = interpData.Mel_sampling;
+
+    % swap the dimensions to match interp3's spec
+
+    
+    xq = interpData.Out_Hem;
+    yq = interpData.Out_Epth;
+    zq = interpData.Out_Mel;
+
+    % floor values to range
+    xq(xq<xi(1)) = xi(1);
+    xq(xq>xi(end)) = xi(end);
+    yq(yq<yi(1)) = yi(1);
+    yq(yq>yi(end)) = yi(end);
+    zq(zq<zi(1)) = zi(1);
+    zq(zq>zi(end)) = zi(end);
+
+    %Vq will be rgb values as vectors 
+    vq = zeros(length(xq),3);
+
+    % set v as the 3d slice of the LUT, do each channel seperatly
+    bestBeta = interpData.Out_Beta;
+
+    for i = 1:3
+        v = LUT(interpData.bestBeta,:,:,:,i);
+
+        Vq(:,i) = interp3(xi,yi,zi,v,xq,yq,zq);
+
+    end 
+
+    % go back to original dir
+    cd(ogPath);
 
 end 

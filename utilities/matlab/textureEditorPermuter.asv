@@ -28,9 +28,9 @@ isoValues = readmatrix(strcat(currentDir,'utilities\\csv\\CaptureISO_perSubject.
 subjects = readmatrix(strcat(currentDir,'utilities\\csv\\subjects.csv'));
 subjects = subjects'; 
 
-% create an additive scale
-scaleType = 'multiplicative'; % set to multiplicative for now
-%scaleType = 'additive'; % set to additive for now
+% create an Additive scale
+scaleType = 'Multiplicative'; % set to Multiplicative for now
+%scaleType = 'Additive'; % set to Additive for now
 
 %% Load chrom path stuff
 load(".\data\LUTs_luxeon_CIEcmfwithbeta.mat");
@@ -99,9 +99,9 @@ addpath(pigPath);
 %% load repeat options txt file
 options = readcell(strcat(currentDir,'utilities\\text\\options.csv'));
 
-repeat = bool(options{1,2});
-fixBandK = bool(options{2,2}); 
-scaleType = options{2,3};
+repeat = logical(options{2,2});
+fixBandK = logical(options{2,2});
+scaleType = options{3,2};
 
 fileNameHandleIn = fileHandle;
 %fileNameHandleIn =''; % jsut to get rid of it for now
@@ -186,10 +186,10 @@ for subj = subjects %subjects
 
     % we want to permute conditions - add and subtract 1 std deviation from the pigment maps
     switch scaleType
-        case "additive"
+        case "Additive"
             values = [0,mel_std, - mel_std;0, hem_std, - hem_std;];
             std_ID = [0,1,-1;0,1,-1;];
-        case "multiplicative"
+        case "Multiplicative"
             % use a set of perms which are 0.75 and 1.25 as well as 1
             values = [1,0.5, 2; 1, 0.5, 2;];
             std_ID = [0,1,2;0,1,2;];
@@ -221,9 +221,9 @@ for subj = subjects %subjects
     perms = unique(perms, 'rows');
 
     switch scaleType
-        case "additive"
+        case "Additive"
             save(strcat(rendering.permPathPig, rendering.subj_id_string, 'AdditivePerms.mat'), 'perms','std_IDs' ,'mel_std','hem_std'); %save perms for ref
-        case "multiplicative"
+        case "Multiplicative"
             save(strcat(rendering.permPathPig, rendering.subj_id_string, 'MultiplicativePerms.mat'), 'perms','std_IDs' ,'mel_std','hem_std'); %save perms for ref
     end
     save(strcat(rendering.permPathPig, rendering.subj_id_string, 'perms.mat'), 'perms','std_IDs' ,'mel_std','hem_std'); %save perms for ref
@@ -238,12 +238,12 @@ for subj = subjects %subjects
         Out_Mel2 = Out_Mel;
         Out_Hem2 = Out_Hem;
         
-        % if the case is additive, add the values to the pigment maps
+        % if the case is Additive, add the values to the pigment maps
         switch scaleType
-            case "additive"
+            case "Additive"
                 Out_Mel2(face_mask) = Out_Mel(face_mask) + perms(i,1);
                 Out_Hem2(face_mask) = Out_Hem(face_mask) + perms(i,2);
-            case "multiplicative"
+            case "Multiplicative"
                 % use a set of perms which are 0.75 and 1.25 as well as 1
                 Out_Mel2(face_mask) = Out_Mel(face_mask) * perms(i,1);
                 Out_Hem2(face_mask) = Out_Hem(face_mask) * perms(i,2);
@@ -261,6 +261,9 @@ for subj = subjects %subjects
         Out_Epth = reshape(Out_Epth,[],1);
         Out_Beta = reshape(Out_Beta,[],1);
 
+        % use interp3 
+        
+
         %get the index of the nearest value in the sampling array
         [~,melInd] = min(abs(Out_Mel2 - Mel_sampling));
         [~,hemInd] = min(abs(Out_Hem2 - Hem_sampling));
@@ -268,11 +271,14 @@ for subj = subjects %subjects
         [~,epthInd] = min(abs(Out_Epth-Epth_sampling),[],2);
 
         % calibrate the maps to the sampling values 
-        Out_Mel2(face_mask1D) = Mel_sampling(melInd(face_mask1D));
-        Out_Hem2(face_mask1D) = Hem_sampling(hemInd(face_mask1D));
+        %Out_Mel2(face_mask1D) = Mel_sampling(melInd(face_mask1D));
+        %Out_Hem2(face_mask1D) = Hem_sampling(hemInd(face_mask1D));
         %out epth and beta are the same 
 
-       LUTSDims = size(LUTs);
+      
+        
+
+        LUTSDims = size(LUTs);
     
         LUTs1D= reshape(LUTs, [], 3); 
         
@@ -391,18 +397,18 @@ function normIm= texNormalize(rendering)
     end
 
     switch rendering.scaleType
-        case "additive"
+        case "Additive"
             exrwrite(normIm,strcat(rendering.permPathTex, rendering.subj_id_string, rendering.fileNameHandleOut,  '_Additive.exr')); %write to the rendering directory 
-        case "multiplicative"
+        case "Multiplicative"
             exrwrite(normIm,strcat(rendering.permPathTex, rendering.subj_id_string, rendering.fileNameHandleOut,  '_Multiplicative.exr')); %write to the rendering directory 
     end
     %exrwrite(normIm,strcat(rendering.permPathTex, rendering.subj_id_string, rendering.fileNameHandleOut,  '.exr')); %write to the rendering directory 
     
     % Write cache file
     switch rendering.scaleType
-        case "additive"
+        case "Additive"
             cacheFile = fullfile(rendering.permPathCache, ['cache_' rendering.subj_id_string rendering.fileNameHandleOut '_Additive.txt']);
-        case "multiplicative"
+        case "Multiplicative"
             cacheFile = fullfile(rendering.permPathCache, ['cache_' rendering.subj_id_string rendering.fileNameHandleOut '_Multiplicative.txt']);
     end
   
