@@ -18,7 +18,7 @@ addpath(genpath('.\data\'));
 %% debug options 
 subsampling_factor_img = 1; % subsampling factor for the image for debugging purposes
 
-debug = 0; % Set debug to 1 to enable debug statements
+debug = 1; % Set debug to 1 to enable debug statements
 
 % normalise the textures
 %load the csv with ISO values
@@ -262,18 +262,31 @@ for subj = subjects %subjects
         Out_Beta = reshape(Out_Beta,[],1);
 
         bestBeta = unique(Out_Beta(face_mask)); %get the unique beta values in the face mask - should be homogenous 
+
+        [~,bestBeta] = min(abs(bestBeta-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
+
+        
         
         % set up interp data structs 
-        interpData = struct('Hem_sampling', Hem_sampling, 'Epth_sampling', Epth_sampling, 'Mel_sampling', Mel_sampling, 'Out_Hem', Out_Hem2, 'Out_Epth', Out_Epth, 'Out_Mel', Out_Mel2, 'bestBeta', bestBeta);
+        interpData = struct( ...
+            'Hem_sampling', Hem_sampling,...
+            'Epth_sampling', Epth_sampling, ...
+            'Mel_sampling', Mel_sampling,...
+            'Out_Hem', Out_Hem2, ...
+            'Out_Epth', Out_Epth,...
+            'Out_Mel', Out_Mel2,...
+            'bestBeta', bestBeta, ...
+            'LUTs', LUTs ...
+            );
 
         % use interp3 
         interpRGBs = interpLUT(interpData);
 
         %get the index of the nearest value in the sampling array
-        [~,melInd] = min(abs(Out_Mel2 - Mel_sampling));
-        [~,hemInd] = min(abs(Out_Hem2 - Hem_sampling));
-        [~,betaInd] = min(abs(Out_Beta-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
-        [~,epthInd] = min(abs(Out_Epth-Epth_sampling),[],2);
+        %[~,melInd] = min(abs(Out_Mel2 - Mel_sampling));
+        %[~,hemInd] = min(abs(Out_Hem2 - Hem_sampling));
+        %[~,betaInd] = min(abs(Out_Beta-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
+        %[~,epthInd] = min(abs(Out_Epth-Epth_sampling),[],2);
 
         % calibrate the maps to the sampling values 
         %Out_Mel2(face_mask1D) = Mel_sampling(melInd(face_mask1D));
@@ -283,21 +296,27 @@ for subj = subjects %subjects
       
         
 
-        LUTSDims = size(LUTs);
+        %LUTSDims = size(LUTs);
     
-        LUTs1D= reshape(LUTs, [], 3); 
+        %LUTs1D= reshape(LUTs, [], 3); 
         
-        melInd = melInd' ;
-        hemInd = hemInd';
+        %melInd = melInd' ;
+        %hemInd = hemInd';
 
         % Convert indices to linear indices
-        linInds = sub2ind([LUTSDims(1), LUTSDims(2), LUTSDims(3), LUTSDims(4)], betaInd(face_mask1D), epthInd(face_mask1D), melInd(face_mask1D), hemInd(face_mask1D));
+        %linInds = sub2ind([LUTSDims(1), LUTSDims(2), LUTSDims(3), LUTSDims(4)], betaInd(face_mask1D), epthInd(face_mask1D), melInd(face_mask1D), hemInd(face_mask1D));
 
         % Extract images using linear indices
-        extracted_images = zeros(length(Out_Mel2),3);
-        extracted_images(face_mask1D,:) = LUTs1D(linInds, :);
+        %extracted_images = zeros(length(Out_Mel2),3);
+        %extracted_images(face_mask1D,:) = LUTs1D(linInds, :);
 
-        Out_Img2 = reshape(extracted_images,dims(1),dims(2),3);
+        Out_Img2 = reshape(interpRGBs,dims(1),dims(2),3);
+
+        % apply mask
+        for i = 1:3
+            Out_Img2(:,:,i) = Out_Img2(:,:,i) .* double(face_mask); 
+        end
+
         if debug
             figure;
             subplot(121); 
@@ -376,13 +395,35 @@ function normIm= texNormalize(rendering)
     hemPerc = prctile(rendering.Out_Hem2(rendering.face_mask),3,'all');
     disp(['3rd perc hem is: ' num2str(hemPerc)])
 
-    melInd = find(melPerc == rendering.Mel_sampling);
-    hemInd = find(hemPerc == rendering.Hem_sampling);
+    [~,melInd] = min(abs((melPerc - rendering.Mel_sampling)));
+    [~,hemInd] = min(abs(hemPerc -rendering.Hem_sampling));
     [~,betaInd] = min(abs(mean(rendering.Out_Beta,'all')-rendering.Beta_sampling)); %set this to the mean 
     [~,epthInd] = min(abs(mean(rendering.Out_Epth,'all')-rendering.Epth_sampling)); %set this to the mean
+    
 
-    refl = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
-    refl = reshape(refl,1,3);
+    bestBeta = unique(rendering.Out_Beta(rendering.face_mask)); %get the unique beta values in the face mask - should be homogenous 
+    [~,bestBeta] = min(abs(bestBeta-rendering.Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
+
+        
+
+    % set up the struct 
+     % set up interp data structs 
+        interpData = struct( ...
+            'Hem_sampling', rendering.Hem_sampling,...
+            'Epth_sampling', rendering.Epth_sampling, ...
+            'Mel_sampling', rendering.Mel_sampling,...
+            'Out_Hem', hemPerc, ...
+            'Out_Epth', mean(rendering.Out_Epth,'all'),...
+            'Out_Mel', melPerc,...
+            'bestBeta', bestBeta, ...
+            'LUTs', rendering.LUTs ...
+            );
+    % the reflectance value is now gained via interpolation 
+    refl1 = interpLUT(interpData);
+    refl2 = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
+
+    %refl = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
+    refl = reshape(refl1,1,3);
 
     vecIm = reshape(rendering.Out_Img,[],3);
 
@@ -435,19 +476,18 @@ function normIm= texNormalize(rendering)
 end
 
 
-function Vq = interpLUT(interpData); 
+function Vq = interpLUT(interpData)
     
     % get current directory
     ogPath = pwd;
 
     chromPath = "C:\Users\tw1700\Downloads\Code_chromophores_estimation\";
     cd(chromPath);
-    light_spectrum = light_spectrum(21:10:321,2);
 
     % should have vectors of query points, with sampling forming the original sampling points
     % and the LUTs as the values to interpolate between
 
-    LUTCrop = LUTs(:,1:9,:,:,:);
+    LUTCrop = interpData.LUTs(:,1:9,:,:,:);
 
     % get original sample points
     xi = interpData.Hem_sampling;
@@ -457,9 +497,9 @@ function Vq = interpLUT(interpData);
     % swap the dimensions to match interp3's spec
 
     
-    xq = interpData.Out_Hem;
+    xq = interpData.Out_Hem';
     yq = interpData.Out_Epth;
-    zq = interpData.Out_Mel;
+    zq = interpData.Out_Mel';
 
     % floor values to range
     xq(xq<xi(1)) = xi(1);
@@ -470,13 +510,11 @@ function Vq = interpLUT(interpData);
     zq(zq>zi(end)) = zi(end);
 
     %Vq will be rgb values as vectors 
-    vq = zeros(length(xq),3);
-
-    % set v as the 3d slice of the LUT, do each channel seperatly
-    bestBeta = interpData.Out_Beta;
+    Vq = zeros(length(xq),3);
 
     for i = 1:3
-        v = LUT(interpData.bestBeta,:,:,:,i);
+        v = LUTCrop(interpData.bestBeta,:,:,:,i);
+        v = reshape(v, 9,51,51); 
 
         Vq(:,i) = interp3(xi,yi,zi,v,xq,yq,zq);
 

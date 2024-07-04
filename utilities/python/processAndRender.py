@@ -41,7 +41,7 @@ LightingCase = 1; # 1 is full file, 2 is without overhead lighting
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
 SkipMatlab = True #skip the matlab script and just render the scenes for debugging
 
-pathHandle = 'reRunWNormsandCorrectSpec\\' #customise this for output name -- don't use end
+pathHandle = 'InterpLUTCheck\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
 
 kr1 = False #render with homogenous specularity of 1
