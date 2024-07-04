@@ -156,8 +156,25 @@ for subj = subjects
     [~,betaInd] = min(abs(mean(Out_Beta,'all')-Beta_sampling)); %set this to the mean 
     [~,epthInd] = min(abs(mean(Out_Epth,'all')-Epth_sampling)); %set this to the mean
 
-    refl = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
-    refl = reshape(refl,1,3);
+    
+    % set up the struct 
+     % set up interp data structs 
+        interpData = struct( ...
+            'Hem_sampling', rendering.Hem_sampling,...
+            'Epth_sampling', rendering.Epth_sampling, ...
+            'Mel_sampling', rendering.Mel_sampling,...
+            'Out_Hem', hemPerc, ...
+            'Out_Epth', mean(rendering.Out_Epth,'all'),...
+            'Out_Mel', melPerc,...
+            'bestBeta', bestBeta, ...
+            'LUTs', rendering.LUTs ...
+            );
+    % the reflectance value is now gained via interpolation 
+    refl1 = interpLUT(interpData);
+    refl2 = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
+
+    %refl = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
+    refl = reshape(refl1,1,3);
 
     vecIm = reshape(Out_Img,[],3);
 
@@ -446,4 +463,53 @@ function sub = getBeta(rendering)
                 sub = find(beta_mode==rendering.Beta_sampling);
 
                 % we encapulate this in a function to avoid having to overwrite the maps
-            end
+end
+
+function Vq = interpLUT(interpData)
+    
+    % get current directory
+    ogPath = pwd;
+
+    chromPath = "C:\Users\tw1700\Downloads\Code_chromophores_estimation\";
+    cd(chromPath);
+
+    % should have vectors of query points, with sampling forming the original sampling points
+    % and the LUTs as the values to interpolate between
+
+    LUTCrop = interpData.LUTs(:,1:9,:,:,:);
+
+    % get original sample points
+    xi = interpData.Hem_sampling;
+    yi = interpData.Epth_sampling(1:9);
+    zi = interpData.Mel_sampling;
+
+    % swap the dimensions to match interp3's spec
+
+    
+    xq = interpData.Out_Hem';
+    yq = interpData.Out_Epth;
+    zq = interpData.Out_Mel';
+
+    % floor values to range
+    xq(xq<xi(1)) = xi(1);
+    xq(xq>xi(end)) = xi(end);
+    yq(yq<yi(1)) = yi(1);
+    yq(yq>yi(end)) = yi(end);
+    zq(zq<zi(1)) = zi(1);
+    zq(zq>zi(end)) = zi(end);
+
+    %Vq will be rgb values as vectors 
+    Vq = zeros(length(xq),3);
+
+    for i = 1:3
+        v = LUTCrop(interpData.bestBeta,:,:,:,i);
+        v = reshape(v, 9,51,51); 
+
+        Vq(:,i) = interp3(xi,yi,zi,v,xq,yq,zq);
+
+    end 
+
+    % go back to original dir
+    cd(ogPath);
+
+end 
