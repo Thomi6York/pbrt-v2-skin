@@ -476,19 +476,22 @@ function Vq = interpLUT(interpData)
     % should have vectors of query points, with sampling forming the original sampling points
     % and the LUTs as the values to interpolate between
 
-    LUTCrop = interpData.LUTs(:,1:9,:,:,:);
+    LUTCrop = interpData.LUTs(interpData.bestBeta,1:9,:,:,:);
+    LUTCrop =reshape(LUTCrop,9,51,51,3);
+
+    [d1,d2,d3,d4] = size(LUTCrop);
 
     % get original sample points
-    xi = interpData.Hem_sampling;
-    yi = interpData.Epth_sampling(1:9);
-    zi = interpData.Mel_sampling;
+    xi = interpData.Hem_sampling';
+    yi = interpData.Epth_sampling(1:d1);
+    zi = interpData.Mel_sampling';
 
     % swap the dimensions to match interp3's spec
 
     
-    xq = interpData.Out_Hem';
-    yq = interpData.Out_Epth;
-    zq = interpData.Out_Mel';
+    xq = interpData.Out_Hem;
+    yq = interpData.Out_Epth';
+    zq = interpData.Out_Mel;
 
     % floor values to range
     xq(xq<xi(1)) = xi(1);
@@ -497,17 +500,69 @@ function Vq = interpLUT(interpData)
     yq(yq>yi(end)) = yi(end);
     zq(zq<zi(1)) = zi(1);
     zq(zq>zi(end)) = zi(end);
+% 
+%     xq = 0:0.001:0.5;
+% yq = interpData.Epth_sampling(1:d2); %leave epth alone bc sampled regularly 
+% zq = 0:0.001:0.5;
+% 
+% % generate actual permutations of new coordinate system
+% count = 0;
+% 
+% perms =zeros((length(xq)*length(zq)*length(yq)),3);
+% permsID =perms; 
+%     % permute all values
+%     for i = 1:size(xq,2)
+%         for j = 1:size(yq,2)
+%             for k =1:size(zq,2)
+%                 %don't add a perm if its just the GT 
+%     
+%                     count = count + 1;
+%                     perms(count,1) = xq(1,i);
+%                     perms(count,2) = yq(1,j);
+%                     perms(count,3) = zq(1,k);
+%                     % correspondence 
+%                     permsID(count,1) = i;
+%                     permsID(count,2) = j;
+%                     permsID(count,3) = k; 
+%     
+%             end
+%  
+%         end
+%     end
+%     xq = perms(:,1);
+%     yq = perms(:,2); %leave epth alone bc sampled regularly 
+%     zq = perms(:,3);
+
 
     %Vq will be rgb values as vectors 
     Vq = zeros(length(xq),3);
+    
+%     v = LUTCrop(interpData.bestBeta,1,:,:,:);
+%     v = reshape(v,51,51,3);
+%     figure; imshow(v); %visualise v 
 
     for i = 1:3
-        v = LUTCrop(interpData.bestBeta,:,:,:,i);
-        v = reshape(v, 9,51,51); 
+        v = LUTCrop(:,:,:,i);
 
-        Vq(:,i) = interp3(xi,yi,zi,v,xq,yq,zq);
-
+        % looks like the mel and hem dimensions were the wrong way around
+        % -- ah look at the labels for the original index. hem was last. 
+        Vq(:,i) = interp3(zi,yi,xi,v,zq,yq,xq);
+        
+%         for row = 1:length(Vq)
+%            I = permsID(row,1); % remember to switch 2nd and first dims  
+%            J = permsID(row,2);
+%            K = permsID(row,3);
+% 
+%            newLUT(J,I,K,i) = Vq(row,i); 
+     
+%        end
     end 
+%     [d1, d2, d3, d4,] = size(newLUT);
+%     
+%     visLUT = newLUT(1,:,:,:);
+%     visLUT = reshape(visLUT,d2,d3,d4);
+%     
+%     figure; imshow(lin2rgb(visLUT)); hold on; plot(25,1,'r+', 'MarkerSize', 10);
 
     % go back to original dir
     cd(ogPath);

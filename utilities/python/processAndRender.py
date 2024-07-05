@@ -48,7 +48,7 @@ kr1 = False #render with homogenous specularity of 1
 
 
 fileName = 'normTex' + fileHandle # add extensions later
-customName = 'LinearTexturesDoubleHalfScaling' #custom name for the output file  
+customName = 'Fixedinterpolation' #custom name for the output file  
 outFileName = fileName + customName + scaleType # to rerun with diff output name
 
 
