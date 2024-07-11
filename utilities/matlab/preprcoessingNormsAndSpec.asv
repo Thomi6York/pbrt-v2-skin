@@ -34,8 +34,8 @@ for subj = subjects
     normals(:, :, 1) = normals(:, :, 1) ./ lengths;
     normals(:, :, 2) = normals(:, :, 2) ./ lengths;
     normals(:, :, 3) = normals(:, :, 3) ./ lengths;
-   
-    normal_image = normals;
+    SpecNormal = normals; 
+    normal_In = normal_image;
 
     %normalise ISOs for spec text (only)
     ISO = isoValues(subj +1,2);
@@ -45,12 +45,12 @@ for subj = subjects
     specular_image = (specular_image.*ISOref)/ISO;
 
 
-%     % compare 
-%     for i = 1:3
-%         diff = normal_In(:,:,i) - normal_image(:,:,i);
-%         figure; imagesc(diff)
-% 
-%     end
+    % compare 
+    for i = 1:3
+        diff = normal_In(:,:,i) - normal_image(:,:,i);
+        figure; imagesc(diff)
+
+    end
 
     %display image for checking
     figure; imshow(specular_image); title('Flipped Specular Texture');

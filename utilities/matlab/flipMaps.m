@@ -15,12 +15,12 @@ for subj = subjects
     specular_image = imread(strcat(subj_id_string ,'\shader\spec_texture.bmp'));
     specular_image = flipud(specular_image);
     specular_image = rgb2lin(specular_image);
-    specular_image = double(specular_image)/255;
+    specular_image = double(specular_image)./255;
 
 
     %do the same to the nomral images 
     normal_image = imread([subj_id_string '\shader\spec_normal.bmp']);
-    normal_image = double(normal_image)/255;
+    normal_image = double(normal_image)./255;
     normal_image = flipud(normal_image);
     normal_image = rgb2lin(normal_image);
 

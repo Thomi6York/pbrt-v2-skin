@@ -31,7 +31,7 @@ masked_region = zeros(size(output));
 
 masked_region(inverted_mask3D) = output(inverted_mask3D);
 
-masked_region = masked_region/255;
+masked_region = masked_region./255;
 figure;imshow(masked_region);title('masked region')
 
 %%
