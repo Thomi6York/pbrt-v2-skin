@@ -17,7 +17,7 @@ import csv
 sample = 8; #default but will always round up to a power of 2
 
 
-subjects = [0,5]; #subjects to render -- these are the subjects we are inverse rendering
+subjects = [0]; #subjects to render -- these are the subjects we are inverse rendering
 #subjects = [0,3,5,7,22]; 
 #subjects =22; 
 
@@ -27,28 +27,28 @@ perms = 'all' #set to 'all' to render all permutations, otherwise select permID'
 scaleType = 'Multiplicative' #multiplicative or additive
 
 #set options for the script
-batchRenderGT = False #will render all the GT scenes in the batch script
+batchRenderGT = True #will render all the GT scenes in the batch script
 reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
-rewriteCachfiles = False #if you want to rewrite the cache files
-writeSceneFileGT = False
+rewriteCachfiles = True #if you want to rewrite the cache files
+writeSceneFileGT = True
 
-permuteScene = True# avoid all perms options 
-generatePermTextures = True; batchRenderPerms = True; noSpecPerms = False
+permuteScene = False# avoid all perms options 
+generatePermTextures = False; batchRenderPerms = False; noSpecPerms = False
 
-NoSpec = False #render the NoSpec scenes
+NoSpec = True #render the NoSpec scenes
 
-LightingCase = 1; # 1 is full file, 2 is without overhead lighting 
+LightingCase = 2; # 1 is full file, 2 is without overhead lighting 
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
-SkipMatlab = True #skip the matlab script and just render the scenes for debugging
+SkipMatlab = False #skip the matlab script and just render the scenes for debugging
 
-pathHandle = 'InterpLUTCheck\\' #customise this for output name -- don't use end
+pathHandle = 'reRunWNormsandCorrectSpec\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
 
 kr1 = False #render with homogenous specularity of 1
 
 
-fileName = 'normTex' + fileHandle # add extensions later
-customName = 'Fixedinterpolation' #custom name for the output file  
+fileName = 'newMaps' + fileHandle # add extensions later
+customName = 'GroundTruthNoOverheadNoSpecNewMaps' #custom name for the output file  
 outFileName = fileName + customName + scaleType # to rerun with diff output name
 
 

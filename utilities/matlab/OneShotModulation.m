@@ -8,6 +8,7 @@ clear all
 
 %%
 
+
 subj =0; 
 format longG;
 
@@ -18,6 +19,9 @@ cd(chromPath);
 
 %add shaderPath to data
 addpath(genpath('.\data\'));
+
+%% load the image and maps
+load("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\experiments\reRunWNormsandCorrectSpec\pigmentMaps\S000_newMapsISONorm.mat")
 
 %% get reflection of third percentiles using LUT
 load(".\data\LUTs_luxeon_CIEcmfwithbeta.mat");
@@ -37,32 +41,9 @@ else
     disp('cannot find paths')
 end
 
+subsampling_factor_img = 1; % subsampling factor for the image for debugging purposes
 
-pathInfo = readcell(pathpath);
-% isolate the shaderPath from the brackets
-TexPath = char(extractBetween(pathInfo{1}, '"', '"'));
-TexPath = TexPath(2,:);
-renderingPath = char(extractBetween(pathInfo{2}, '"', '"'));
-scenePath = char(extractBetween(pathInfo{3}, '"', '"'));
-dataSetPath = char(extractBetween(pathInfo{4}, '"', '"'));
-cachePath = char(extractBetween(pathInfo{5}, '"', '"'));
-meshPath = char(extractBetween(pathInfo{6}, '"', '"'));
-pigPath = char(extractBetween(pathInfo{7}, '"', '"'));
-fileHandle = char(extractBetween(pathInfo{8}, '"', '"'));
-pathHandle = char(extractBetween(pathInfo{9}, '"', '"'));
-fileName = char(extractBetween(pathInfo{10}, '"', '"'));
-
-
-addpath(renderingPath);
-addpath(scenePath);
-addpath(dataSetPath);
-addpath(meshPath);
-addpath(pigPath);
-
-
-subsampling_factor_img = 30; % subsampling factor for the image for debugging purposes
-
-debug = 0; % Set debug to 1 to enable debug statements
+debug = 1; % Set debug to 1 to enable debug statements
 
 % normalise the textures
 %load the csv with ISO values
@@ -72,96 +53,83 @@ isoValues = readtable(strcat(currentDir,'utilities\\csv\\CaptureISO_perSubject.c
 subjects = readmatrix(strcat(currentDir,'utilities\\csv\\subjects.csv'));
 subjects = subjects'; 
 
+subj_id_string = ['S' num2str(subj, '%03d')];
 
-%% load repeat options csv file
-options = readcell(strcat(currentDir,'utilities\\text\\options.csv'));
-
-repeat = logical(options{2,2});
-fixBandK = logical(options{2,2});
-scaleType = options{3,2};
-
-
-rendering.subj_id_string = ['S' num2str(subj, '%03d')];
+fileName = strcat(subj_id_string, 'OneShot');
 
 % check whether maps are precalculated
 
 % load the mask for the face
-rendering.shaderPath = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\', rendering.subj_id_string, '\shader\');
-addpath(rendering.shaderPath);
-rendering.face_mask = imread(strcat(rendering.shaderPath, rendering.subj_id_string, '_E00_Mask.bmp')); 
-rendering.face_mask = rendering.face_mask(:,:,2)>0;
+shaderPath = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\', subj_id_string, '\shader\');
+addpath(shaderPath);
+face_mask = imread(strcat(shaderPath, subj_id_string, '_E00_Mask.bmp')); 
+face_mask = face_mask(:,:,2)>0;
 
-rendering.face_mask = rendering.face_mask(1:subsampling_factor_img:end,1:subsampling_factor_img:end); %subsample mask
+face_mask = face_mask(1:subsampling_factor_img:end,1:subsampling_factor_img:end); %subsample mask
 %% append rendering stuff into a struct for neatness 
 
-rendering = struct('subj', 0, 'subj_id_string',0, ...
-    'TexPath', TexPath, 'shaderPath', '', 'renderingPath', renderingPath, 'scenePath', scenePath, 'dataSetPath', dataSetPath, 'cachePath', cachePath, 'meshPath', meshPath, 'pigPath', pigPath, ...
-    'isoValues', isoValues, 'LUTs', LUTs, 'LUTs_Lab', LUTs_Lab, 'light_spectrum',light_spectrum, 'CMFs',CMFs,...
-    'Mel_sampling', Mel_sampling, 'Hem_sampling', Hem_sampling, 'Epth_sampling', Epth_sampling, 'Beta_sampling', Beta_sampling, ...
-    'subsampling_factor_img', subsampling_factor_img, 'face_mask', [], 'debug', debug, 'fixBandK', fixBandK, 'repeat', repeat, 'fileHandle', fileHandle, 'pathHandle', pathHandle, 'fileName', fileName);
+
+disp('Modulating texture via normalization with the 3rd percentile of the chromophores');
+
+% get 3rd percentile w/mask for homogenous skin layer settings
+faceMel = Out_Mel(face_mask);
+
+melPerc = prctile(Out_Mel(face_mask),3, 'all');
+
+disp(['3rd perc mel is: ' num2str(melPerc)])
+
+% get 3rd percentile w/mask for homogenous skin layer settings
+hemPerc = prctile(Out_Hem(face_mask),3,'all');
+disp(['3rd perc hem is: ' num2str(hemPerc)])
+
+melInd = find(melPerc == Mel_sampling);
+hemInd = find(hemPerc == Hem_sampling);
+[~,betaInd] = min(abs(mean(Out_Beta,'all')-Beta_sampling)); %set this to the mean 
+[~,epthInd] = min(abs(mean(Out_Epth,'all')-Epth_sampling)); %set this to the mean
 
 
-    disp('Modulating texture via normalization with the 3rd percentile of the chromophores');
+refl = LUTs(betaInd,epthInd,melInd,hemInd,:); 
 
-    % get 3rd percentile w/mask for homogenous skin layer settings
-    faceMel = Out_Mel(subfacemask);
+%refl = LUTs(betaInd,epthInd,melInd,hemInd,:); 
+refl = reshape(refl,1,3);
 
-    melPerc = prctile(Out_Mel(subfacemask),3, 'all');
+vecIm = reshape(Out_Img,[],3);
 
-    disp(['3rd perc mel is: ' num2str(melPerc)])
+normIm = vecIm./refl;
+normIm = reshape(normIm, size(Out_Img));
 
-    % get 3rd percentile w/mask for homogenous skin layer settings
-    hemPerc = prctile(Out_Hem(subfacemask),3,'all');
-    disp(['3rd perc hem is: ' num2str(hemPerc)])
+if debug
+    disp('Displaying normalized texture');
+    figure; imshow(normIm);title('Normalized texture');
+end
 
-    melInd = find(melPerc == Mel_sampling);
-    hemInd = find(hemPerc == Hem_sampling);
-    [~,betaInd] = min(abs(mean(Out_Beta,'all')-Beta_sampling)); %set this to the mean 
-    [~,epthInd] = min(abs(mean(Out_Epth,'all')-Epth_sampling)); %set this to the mean
+% Flip the image vertically
+normIm = flipud(normIm);
 
-    
-    refl = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
+if debug
+    figure; imshow(normIm);title('transformed for rendering');
+end
 
-    %refl = rendering.LUTs(betaInd,epthInd,melInd,hemInd,:); 
-    refl = reshape(refl,1,3);
+exrwrite(normIm,strcat(currentDir, subj_id_string, fileName, '.exr')); %write to the rendering directory 
+if debug
+    disp(strcat('Saving texture to ', currentDir, subj_id_string, fileName,  '.exr'));
+end
+%%
+% give it a blank permID
+count = [];
 
-    vecIm = reshape(Out_Img,[],3);
-
-    normIm = vecIm./refl;
-    normIm = reshape(normIm, size(Out_Img));
-
-    if rendering.debug
-        disp('Displaying normalized texture');
-        figure; imshow(normIm);title('Normalized texture');
-    end
-    
-    % Flip the image vertically
-    normIm = flipud(normIm);
-
-    if rendering.debug
-        figure; imshow(normIm);title('transformed for rendering');
-    end
-    
-    exrwrite(normIm,strcat(rendering.TexPath, rendering.subj_id_string, fileName, '.exr')); %write to the rendering directory 
-    if rendering.debug
-        disp(strcat('Saving texture to ', rendering.TexPath, rendering.subj_id_string, fileName,  '.exr'));
-    end
-
-    % give it a blank permID
-    count = [];
-    
-    % Write cache file
-    cacheFile = fullfile(cachePath, ['cache_' rendering.subj_id_string fileName '.txt']);
-    fid = fopen(cacheFile, 'w');
-    fprintf(fid, 'Subject: %s\n', rendering.subj_id_string);
-    fprintf(fid, 'Melanin 3rd percentile: %f\n', melPerc);
-    fprintf(fid, 'Hemoglobin 3rd percentile: %f\n', hemPerc);
-    fprintf(fid, 'melInd: %d\n', melInd);
-    fprintf(fid, 'hemInd: %d\n', hemInd);
-    fprintf(fid, 'betaInd: %d\n', betaInd);
-    fprintf(fid, 'mean beta val: %d \n', Beta_sampling(betaInd));
-    fprintf(fid, 'epthInd: %d\n', epthInd);
-    fprintf(fid, 'mean epth val: %d \n', Epth_sampling(epthInd));
-    fprintf(fid, 'permID: %d \n', count);
-    fclose(fid);
-    disp(['Wrote cache file to ' cacheFile]);
+% Write cache file
+cacheFile = fullfile(currentDir, ['cache_OneShot' subj_id_string fileName '.txt']);
+fid = fopen(cacheFile, 'w');
+fprintf(fid, 'Subject: %s\n', subj_id_string);
+fprintf(fid, 'Melanin 3rd percentile: %f\n', melPerc);
+fprintf(fid, 'Hemoglobin 3rd percentile: %f\n', hemPerc);
+fprintf(fid, 'melInd: %d\n', melInd);
+fprintf(fid, 'hemInd: %d\n', hemInd);
+fprintf(fid, 'betaInd: %d\n', betaInd);
+fprintf(fid, 'mean beta val: %d \n', Beta_sampling(betaInd));
+fprintf(fid, 'epthInd: %d\n', epthInd);
+fprintf(fid, 'mean epth val: %d \n', Epth_sampling(epthInd));
+fprintf(fid, 'permID: %d \n', count);
+fclose(fid);
+disp(['Wrote cache file to ' cacheFile]);
