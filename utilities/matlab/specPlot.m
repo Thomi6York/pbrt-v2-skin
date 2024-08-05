@@ -190,16 +190,16 @@ for subj = subjs
     dotNormB = BNI(:,:,1)*viewDir(1)+BNI(:,:,2)*viewDir(2)+BNI(:,:,3)*viewDir(3);
 
 
-    rDiff = im(:,:,1);%./dotNormR; %dotNormR is a cosine here
+    rDiff = im(:,:,1)./dotNormR; %dotNormR is a cosine here
     rDiff(~face_mask) = NaN; % apply mask    
     if subj == 0
         figure; imshow(rDiff); title('Diffuse albedo accounting for viewing angle via dot product')
     end
 
     
-    gDiff = im(:,:,2);%./dotNormG;
+    gDiff = im(:,:,2)./dotNormG;
     gDiff(~face_mask) = NaN; % apply mask
-    bDiff = im(:,:,3);%./dotNormB; 
+    bDiff = im(:,:,3)./dotNormB; 
     bDiff(~face_mask) = NaN; % apply mask
     
 
