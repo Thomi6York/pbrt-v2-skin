@@ -341,13 +341,13 @@ for subj = subjects %subjects
         
     
                 %Convert indices to linear indices
-                %linInds = sub2ind([LUTSDims(1), LUTSDims(2), LUTSDims(3), LUTSDims(4)], betaInd(face_mask1D), epthInd(face_mask1D), melInd(face_mask1D), hemInd(face_mask1D));
+                linInds = sub2ind([LUTSDims(1), LUTSDims(2), LUTSDims(3), LUTSDims(4)], betaInd(face_mask1D), epthInd(face_mask1D), melInd(face_mask1D), hemInd(face_mask1D));
     
                 % Extract images using linear indices/
                 extracted_images = zeros(length(Out_Mel2),3);
-                %extracted_images(face_mask1D,:) = LUTs1D(linInds, :);
+                extracted_images(face_mask1D,:) = LUTs1D(linInds, :);
                 
-                %Out_Img21 = reshape(extracted_images,dims(1),dims(2),3);
+                Out_Img21 = reshape(extracted_images,dims(1),dims(2),3);
                 Out_Img22 = reshape(interpRGBs,dims(1),dims(2),3);
                 %Out_Img23 = reshape(extracted_imagesInterp,dims(1),dims(2),3); 
     

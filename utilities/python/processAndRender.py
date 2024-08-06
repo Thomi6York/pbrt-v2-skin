@@ -24,10 +24,14 @@ subjects = [0]; #subjects to render -- these are the subjects we are inverse ren
 perms = 'all' #set to 'all' to render all permutations, otherwise select permID's to render
  #perms ['1','2','3','4'] #set to 'all' to render all permutations, otherwise select permID's to render
 
+
+#scaling options
 scaleType = 'Multiplicative' #multiplicative or additive
+scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
+
 
 #set options for the script
-batchRenderGT = True #will render all the GT scenes in the batch script
+batchRenderGT = False #will render all the GT scenes in the batch script
 reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
 rewriteCachfiles = True #if you want to rewrite the cache files
 writeSceneFileGT = True
@@ -41,13 +45,13 @@ LightingCase = 2; # 1 is full file, 2 is without overhead lighting
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
 SkipMatlab = False #skip the matlab script and just render the scenes for debugging
 
-pathHandle = 'reRunWNormsandCorrectSpec\\' #customise this for output name -- don't use end
+pathHandle = 'MultipleScalings\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
 
 kr1 = False #render with homogenous specularity of 1
 
 
-fileName = 'newMaps' + fileHandle # add extensions later
+fileName = 'normTex' + fileHandle # add extensions later
 customName = 'GroundTruthNoOverheadNoSpecNewMaps' #custom name for the output file  
 outFileName = fileName + customName + scaleType # to rerun with diff output name
 
@@ -114,6 +118,7 @@ options = {
     "sample": sample,
     "kr1": kr1,
     "scaleType": scaleType,
+    "scaleMagnitude": scaleMagnitude
 }
 
 #write an options file to store the inverse render option
@@ -121,6 +126,7 @@ with open(".\\utilities\\text\\options.csv", "w") as f:
     f.write(f"repeat,{str(int(reinverseRenderAll))}\n")
     f.write(f"fixbandk,{str(int(fixBandEnd))}\n")
     f.write(f"scaleType, {scaleType}\n")
+    f.write(f"scaleMagnitude, {scaleMagnitude}\n")
 
 #add path to object
 pathInfo = {
@@ -294,10 +300,11 @@ def renderPerms(pathInfo,options):
  
                         print(f"Processing permutation {permID} for subject {subjNumStr}.")
     
-                        overwriteALL, skipAll, scene_command = processFiles(permPathInfo, cache, batch_script1,LightingCase,subjects, sample, overwriteALL, skipAll, scaleType)
+                        overwriteALL, skipAll, scene_command = processFiles(permPathInfo, cache, batch_script1,LightingCase,subjects, sample, overwriteALL, skipAll, scaleType,scaleMagnitude)
                         #write to batch file
                         f1.write(scene_command)
-        
+
+                    #no spec perm scene
                     if (perms == 'all' and subjNumStr in subjects and options["noSpecPerms"] ==True and cacheScaleType==scaleType)|(options["noSpecPerms"] == True and subjNumStr in subjects and permID == perms and cacheScaleType==scaleType):
                         batch_script2 = '.\\utilities\\batch\\NoSpecPerms.bat'
                         # copy the scene file but comment out the NoSpec texture and change the output path

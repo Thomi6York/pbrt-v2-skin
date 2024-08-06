@@ -200,7 +200,9 @@ def readCacheFile(cache_file,subjects):
                 "betaConc": 0,
                 "epThickness": 0,
                 "permID": "",
-                "cacheScaleType": ""
+                "cacheScaleType": "",
+                "cacheScaleMagnitude": 1
+
             }
             return params
         else:
@@ -215,6 +217,7 @@ def readCacheFile(cache_file,subjects):
                 scaleType = lines[10].split(":")[1].strip()
             else: 
                 scaleType = ""
+            scaleMagnitude = float(lines[11].split(":")[1].strip())
 
             #create a single object for all values
             params = {
@@ -224,7 +227,8 @@ def readCacheFile(cache_file,subjects):
                 "betaConc": betaConc,
                 "epThickness": epThickness,
                 "permID": permID,
-                "cacheScaleType": scaleType
+                "cacheScaleType": scaleType,
+                "cacheScaleMagnitude": scaleMagnitude
             }
             return params
 
@@ -258,7 +262,7 @@ def  getSubjects(options):
 
     return subjects
 
-def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1,overwriteALL=False,skipALL = False, scaleType = ""):
+def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1,overwriteALL=False,skipALL = False, scaleType = "", scaleMagnitude = 1):
     #check if we want to overwrite all files
     #set default handle to empty string
 
@@ -275,6 +279,7 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
     melConc = params["melConc"]
     hemConc = params["hemConc"]
     permID = params["permID"]
+    scaleMagnitude = params["cacheScaleMagnitude"]
     scenePath = pathInfo["scenePath"]
     fileName = pathInfo["fileName"]
     outFileName = pathInfo["outFileName"]
@@ -287,15 +292,15 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
         texture = f"{subjNum}{fileName}.exr" # get the texture
     else: #for permuted textures
         renderPath = f"{renderDir}{subjNum}_PermNo_{permID}_Manip"
-        scene_name = f"{subjNum}_PermNo_{permID}_Manip{outFileName}.pbrt"
-        texture = f"{subjNum}PermID{permID}_{fileName}_{scaleType}.exr" # get the texture 
+        scene_name = f"{subjNum}_PermNo_{permID}_Manip{outFileName}{scaleType}{scaleMagnitude}.pbrt"
+        texture = f"{subjNum}PermID{permID}_{fileName}_{scaleType}{scaleMagnitude}.exr" # get the texture 
     
 
     #add additional name if exists]
     if outFileName != "":
         renderPath = f"{renderPath}{fileName}"
     #append exr to render path
-    renderPath = f"{renderPath}{outFileName}.exr"
+    renderPath = f"{renderPath}{outFileName}{scaleMagnitude}.exr"
 
     albedoTexturePath = f"{textureDir}{texture}"
     meshPath = pathInfo["meshPath"]
