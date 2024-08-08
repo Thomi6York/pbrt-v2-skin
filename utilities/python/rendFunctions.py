@@ -293,7 +293,7 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
     else: #for permuted textures
         renderPath = f"{renderDir}{subjNum}_PermNo_{permID}_Manip"
         scene_name = f"{subjNum}_PermNo_{permID}_Manip{outFileName}{scaleType}{scaleMagnitude}.pbrt"
-        texture = f"{subjNum}PermID{permID}_{fileName}_{scaleType}{scaleMagnitude}.exr" # get the texture 
+        texture = f"{subjNum}PermID{permID}_ScaleMag{int(scaleMagnitude)}{fileName}_{scaleType}.exr" # get the texture 
     
 
     #add additional name if exists]

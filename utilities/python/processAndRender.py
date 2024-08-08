@@ -28,22 +28,23 @@ perms = 'all' #set to 'all' to render all permutations, otherwise select permID'
 #scaling options
 scaleType = 'Multiplicative' #multiplicative or additive
 scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
+#scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
 
 
 #set options for the script
 batchRenderGT = False #will render all the GT scenes in the batch script
 reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
-rewriteCachfiles = True #if you want to rewrite the cache files
-writeSceneFileGT = True
+rewriteCachfiles = False #if you want to rewrite the cache files
+writeSceneFileGT = False
 
-permuteScene = False# avoid all perms options 
-generatePermTextures = False; batchRenderPerms = False; noSpecPerms = False
+permuteScene = True# avoid all perms options 
+generatePermTextures = True; batchRenderPerms = True; noSpecPerms = False
 
-NoSpec = True #render the NoSpec scenes
+NoSpec = False #render the NoSpec scenes
 
-LightingCase = 2; # 1 is full file, 2 is without overhead lighting 
-fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
-SkipMatlab = False #skip the matlab script and just render the scenes for debugging
+LightingCase = 1; # 1 is full file, 2 is without overhead lighting 
+fixBandEnd = False # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
+SkipMatlab = True #skip the matlab script and just render the scenes for debugging
 
 pathHandle = 'MultipleScalings\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
@@ -142,6 +143,11 @@ pathInfo = {
     "fileName": fileName,
     "outFileName": outFileName
 }
+
+#write subject list to a .csv file
+with open(".\\utilities\\csv\\subjects.csv", "w") as f:
+    writer = csv.writer(f)
+    writer.writerow(subjects)
 
 
 def GroundTruthRender(pathInfo,options):

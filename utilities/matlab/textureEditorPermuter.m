@@ -111,7 +111,7 @@ options{4,2} = str2num(cell2mat(strsplit(tmp, '[')));
 tmp = options{4,end};
 options{4,end} = str2num(cell2mat(strsplit(tmp,']')));
 
-scaleMagnitude = cell2mat(options(4,2:9));
+scaleMagnitude = cell2mat(options(4,2:size(options,2)));
 
 fileNameHandleIn = fileHandle;
 %fileNameHandleIn =''; % jsut to get rid of it for now
@@ -335,8 +335,8 @@ for subj = subjects %subjects
             
                 LUTs1D= reshape(LUTs, [], 3); 
                 
-                melInd = melInd' ;
-                hemInd = hemInd';
+                %melInd = melInd' ;
+                %hemInd = hemInd';
     
         
     
@@ -542,6 +542,7 @@ function normIm= texNormalize(rendering)
     fprintf(fid, 'mean epth val: %d \n', rendering.Epth_sampling(epthInd));
     fprintf(fid, 'permID: %d \n', rendering.count);
     fprintf(fid, 'Scale type: %s\n', rendering.scaleType);
+    fprintf(fid,'Scale Magnitude: %f\n',rendering.scaleMagnitude);
     fclose(fid);
     disp(['Wrote cache file to ' cacheFile]);
 
