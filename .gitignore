@@ -58,7 +58,7 @@ output_scenes/
 render_bulk/
 #Dont't want experimental data -too large use Drive
 #get rid of experiment data folder keep archive belt and braces
-Experiments/ 
+#Experiments/ 
 /ExperimentalData/
 #*.bat Want these for me
 
