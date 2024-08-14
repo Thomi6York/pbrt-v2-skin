@@ -46,6 +46,12 @@ BSDF *PlasticMaterial::GetBSDF(const DifferentialGeometry &dgGeom,
     DifferentialGeometry dgs;
     if (bumpMap)
         Bump(bumpMap, dgGeom, dgShading, &dgs);
+
+    else if (normalMap) { // here is the normal map implentation 
+		// code to be executed if the condition is true
+		Norm_From_Spectrum(normalMap, dgGeom, dgShading, &dgs);
+	}
+
     else
         dgs = dgShading;
     BSDF *bsdf = BSDF_ALLOC(arena, BSDF)(dgs, dgGeom.nn);
@@ -72,7 +78,8 @@ PlasticMaterial *CreatePlasticMaterial(const Transform &xform,
     Reference<Texture<Spectrum> > Ks = mp.GetSpectrumTexture("Ks", Spectrum(0.25f));
     Reference<Texture<float> > roughness = mp.GetFloatTexture("roughness", .1f);
     Reference<Texture<float> > bumpMap = mp.GetFloatTextureOrNull("bumpmap");
-    return new PlasticMaterial(Kd, Ks, roughness, bumpMap);
+    Reference<Texture<Spectrum> > normalMap = mp.GetSpectrumTextureOrNull("normalmap");
+    return new PlasticMaterial(Kd, Ks, roughness, bumpMap, normalMap);
 }
 
 

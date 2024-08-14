@@ -47,8 +47,9 @@ public:
     PlasticMaterial(Reference<Texture<Spectrum> > kd,
                     Reference<Texture<Spectrum> > ks,
                     Reference<Texture<float> > rough,
-                    Reference<Texture<float> > bump)
-        : Kd(kd), Ks(ks), roughness(rough), bumpMap(bump) {
+                    Reference<Texture<float> > bump,
+                    Reference<Texture<Spectrum> > normalMap)
+        : Kd(kd), Ks(ks), roughness(rough), bumpMap(bump), normalMap(normalMap) {
     }
     BSDF *GetBSDF(const DifferentialGeometry &dgGeom,
                   const DifferentialGeometry &dgShading,
@@ -57,6 +58,7 @@ private:
     // PlasticMaterial Private Data
     Reference<Texture<Spectrum> > Kd, Ks;
     Reference<Texture<float> > roughness, bumpMap;
+    Reference<Texture<Spectrum> > normalMap;
 };
 
 
