@@ -1,7 +1,7 @@
 % flip specular textures and normal maps
 close all;
 clear all; 
-subjects = [0:22];
+subjects = [0,3,5,7];
 
 %load these in from the starting directory
 isoValues = readtable("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\csv\CaptureISO_perSubject.csv");
