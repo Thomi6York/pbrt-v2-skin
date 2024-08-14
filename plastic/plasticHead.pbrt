@@ -44,21 +44,7 @@ AttributeEnd
 
    Texture "norms" "color" "imagemap" "string filename" "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\.\\scenes\\PilotDataSet\\{subjNum}\\shader\\spec_normalFlipped.exr"
             "string wrap" "clamp" "float gamma" 1 "float scale" 1 #implement normals # should all be gamma decoded exrs
-    Material "layeredskin" "float roughness" 0.35 #0.35 is the paper value 
-                           "float nmperunit" 40e6 # nanometers per unit length in world space
-                           "texture Kr" "spec"
-                           "color Kt" [0 0 0] # edit did little changing from 1 to zero  -- this is translucency; can't be seen with a black background
-                           # each layer's depth and index of refraction; units are in nanometers
-                           "skinlayer layers" [ 0.03e6 1.4 20e6 1.4] # is this the thickness -- or above
-                           ## this is the best K epid thickness for candiate 0 
-                           "float f_mel" 0 #from skin_code tables 
-                           "float f_eu" 0 #clamp this at 0.5 as this is where we make the pigment maps from 
-                           "texture normalmap"  "norms" #norms
-               
-                           "float f_blood" 0 # abs of whole blood -- where do I get this from 
-                           "float f_ohg" 0 #seems to be gamma ratio 
-                 
-                           #"texture albedo" "lambertian-norm"
+    Material "plastic" "texture Kd" "reg" "texture Ks" "spec" "texture norms" "norms" "float roughness" 0.1
                            
     Include "E:/pbrt-v2-skinPat/Scenes/geometry/processed/S000Mesh.pbrt"
     AttributeEnd
