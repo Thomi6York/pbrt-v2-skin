@@ -8,7 +8,13 @@ src/bin
 scenes/pbrt-scenes/
 
 # Common renderer output file:
-*.exr
+#*.exr
+render_archive/
+render_bulk (1)/
+results/
+otherRends/
+*.ply
+.*obj
 
 # These files are generated during the build process:
 src/core/pbrtlex.cpp
@@ -45,7 +51,7 @@ Thumbs.db
 
 # Project specific
 #anything in scenes is too big
-scenes/PilotDataSet/
+#scenes/PilotDataSet/
 scenes/geometry/
 randomwalk-probes.txt
 output_scenes/
@@ -387,7 +393,7 @@ render_scenes.bat
 output_scenes/render_all.bat
 output_scenes/render_all.bat
 
-/scenes/
+#/scenes/
 /scenes/textures/
 /output_scenesFixedEpiandB
 /.tmp.driveupload
