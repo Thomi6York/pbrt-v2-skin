@@ -4,11 +4,11 @@ clear all;
 subjects = [0,3,5,7];
 
 %load these in from the starting directory
-isoValues = readtable("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\csv\CaptureISO_perSubject.csv");
+isoValues = readtable("E:\pbrt-v2-skinPat\utilities\csv\CaptureISO_perSubject.csv");
 
 
 %switch to the dataset
-%cd(".\scenes\PilotDataSet\")
+cd("E:\pbrt-v2-skinPat\scenes\PilotDataSet\")
 %%
 for subj = subjects
     subj_id_string =  ['S' num2str(subj, '%03d')];
@@ -60,6 +60,13 @@ for subj = subjects
     %save the flipped texture as an .exr
     exrwrite(specular_image, [subj_id_string '\shader\spec_textureISONormFlipped.exr']);
     exrwrite(normal_image, [subj_id_string '\shader\spec_normalFlipped.exr']);
+
+    % reflip and save as exr
+    specular_image = flipud(specular_image);
+    normal_image = flipud(normal_image);
+
+    exrwrite(specular_image, [subj_id_string '\shader\spec_textureISONorm.exr']);
+    exrwrite(normal_image, [subj_id_string '\shader\spec_normal.exr']);
 
     disp(['Flipped specular texture and normal texture for subject' subj_id_string 'saved as spec_textureISONormFlipped.exr'])
 

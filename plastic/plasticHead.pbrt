@@ -1,7 +1,7 @@
 
     # PBRT scene file with parameters 0 and 0
       
-    Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "greenHead.exr"
+    Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "plasticRegularNormals.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
 Sampler "lowdiscrepancy" "integer pixelsamples" 4 #changed to 30 to improve res and remove specular artifacts (low makes worse)
@@ -38,14 +38,12 @@ AttributeEnd
     Rotate 90  1 0 0
 	  Scale 3 3 3
       # lets try and run this wihtout loading the textures
-   Texture "reg" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\utilities\\matlab\\GreenIm1.exr"
-   "string wrap" "clamp" "float gamma" 1 "float scale" 2 
-   Texture "spec" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\spec_texture.tga"
-
-   Texture "norms" "color" "imagemap" "string filename" "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\.\\scenes\\PilotDataSet\\{subjNum}\\shader\\spec_normalFlipped.exr"
+   Texture "reg" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\diff_texture.tga"
+   "string wrap" "clamp" "float gamma" 2.2 "float scale" 1
+  Texture "spec" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\spec_textureISONorm.exr"
+   Texture "norms" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\spec_normal.exr"
             "string wrap" "clamp" "float gamma" 1 "float scale" 1 #implement normals # should all be gamma decoded exrs
-    Material "plastic" "texture Kd" "reg" "texture Ks" "spec" "texture norms" "norms" "float roughness" 0.1
-                           
+    Material "plastic" "texture Kd" "reg" "texture Ks" "spec" "texture normalmap" "norms" "float roughness" 0.35                   
     Include "E:/pbrt-v2-skinPat/Scenes/geometry/processed/S000Mesh.pbrt"
     AttributeEnd
   
