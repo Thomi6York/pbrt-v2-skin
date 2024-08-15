@@ -1,7 +1,7 @@
 
     # PBRT scene file with parameters 0 and 0
       
-    Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "plasticRegularNormals.exr"
+    Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "greenPlasticHead.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
 Sampler "lowdiscrepancy" "integer pixelsamples" 30 #changed to 30 to improve res and remove specular artifacts (low makes worse)
@@ -38,8 +38,8 @@ AttributeEnd
     Rotate 90  1 0 0
 	  Scale 3 3 3
       # lets try and run this wihtout loading the textures
-   Texture "reg" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\diff_texture.tga"
-   "string wrap" "clamp" "float gamma" 2.2 "float scale" 1
+   Texture "reg" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\utilities\\matlab\\GreenIm1.exr"
+   "string wrap" "clamp" "float gamma" 1 "float scale" 1
   Texture "spec" "color" "imagemap" "string filename"  "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\spec_textureISONorm.exr"
    Texture "norms" "color" "imagemap" "string filename" "E:\\pbrt-v2-skinPat\\scenes\\PilotDataSet\\S000\\shader\\spec_normal.exr"
             "string wrap" "clamp" "float gamma" 1 "float scale" 1 #implement normals # should all be gamma decoded exrs
