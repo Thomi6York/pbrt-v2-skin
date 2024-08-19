@@ -89,8 +89,6 @@ if ~exist(permPathTex, 'dir')
     mkdir(permPathTex);
 end
 
-
-
 addpath(renderingPath);
 addpath(scenePath);
 addpath(dataSetPath);

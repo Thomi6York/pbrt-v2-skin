@@ -1,0 +1,11 @@
+camera
+-focalLength 272.802086
+-horizontalFilmAperture 0.940945
+-horizontalFilmOffset 0.027518
+-verticalFilmAperture 1.409449
+-verticalFilmOffset -0.039862
+xform -m
+0.998872 0.014775 0.045116 0.000000 
+-0.015745 0.999651 0.021212 0.000000 
+-0.044787 -0.021898 0.998757 0.000000 
+-10.227900 -5.104930 225.658005 1.000000
