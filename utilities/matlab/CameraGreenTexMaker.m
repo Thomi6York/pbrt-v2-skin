@@ -3,7 +3,7 @@
 path = "E:\Skin_code\data\ICT_3DRFE_mod\S000\shader\"; 
 
 im = imread(strcat(path, "diff_texture.bmp"));
-
+% add iso nomralization in future
 %% 
 
 m1 = [0.3327    0.2720    0.0332;
@@ -54,6 +54,9 @@ tmp2 = reshape(tmp2,size(im));
 figure; subplot(121); imshow(lin2rgb(tmp1));
 subplot(122);imshow(lin2rgb(tmp2)); 
 
+%flip
+im1 = flipud(im1);
+im2 = flipud(im2);
 %% exr write
 
 exrwrite(im1,"GreenIm1.exr");
