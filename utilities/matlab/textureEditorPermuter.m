@@ -200,7 +200,7 @@ for subj = subjects %subjects
                 case "Additive"
                     mel_std_N = mel_std*sm; 
                     hem_std_N = hem_std*sm;
-                    values = [0,mel_std_N, - mel_std_N;0, hem_std_N; - hem_std_N;];
+                    values = [0,mel_std_N, -mel_std_N;0, hem_std_N, -hem_std_N;];
                     std_ID = [0,1,-1;0,1,-1;];
                 case "Multiplicative"
                     % use a set of perms which are 0.75 and 1.25 as well as 1
@@ -279,7 +279,10 @@ for subj = subjects %subjects
     
                 [~,bestBeta] = min(abs(bestBeta-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
     
-                
+                Out_Hem2 = clampEm(Out_Hem2,Hem_sampling);
+                Out_Mel2 = clampEm(Out_Mel2,Mel_sampling);
+                % beta and epth don't need to be reclamped bc unedited here
+                % 
                 
                 % set up interp data structs 
                 interpData = struct( ...
@@ -360,14 +363,14 @@ for subj = subjects %subjects
                 end
     
                 if debug
-                    figure;
-                    sgtitle('nearest LUT')
-                    subplot(121); 
-                    imshow(lin2rgb(Out_Img)); 
-                    title('Input Texture'); 
-                    subplot(122); 
-                    imshow(lin2rgb(Out_Img21)); 
-                    title(strcat('Permuted Texture with values mel:', num2str(perms(i,1)), ' and hem ', num2str(perms(i,2)))); 
+%                     figure;
+%                     sgtitle('nearest LUT')
+%                     subplot(121); 
+%                     imshow(lin2rgb(Out_Img)); 
+%                     title('Input Texture'); 
+%                     subplot(122); 
+%                     imshow(lin2rgb(Out_Img21)); 
+%                     title(strcat('Permuted Texture with values mel:', num2str(perms(i,1)), ' and hem ', num2str(perms(i,2)))); 
     
                     figure;
                     sgtitle('Interpolated')
@@ -649,4 +652,12 @@ function Vq = interpLUT(interpData)
     % go back to original dir
     cd(ogPath);
 
-end 
+end
+% clamps pigments to their sampling 
+function outPig = clampEm(inPig,sampl)
+    outPig = inPig; 
+    outPig(inPig<sampl(1)) = sampl(1);
+    outPig(inPig>sampl(end)) = sampl(end); 
+    
+
+end
