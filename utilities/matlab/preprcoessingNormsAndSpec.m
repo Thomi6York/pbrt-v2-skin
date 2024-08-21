@@ -27,16 +27,17 @@ for subj = subjects
     normal_image = flipud(normal_image);
     normal_image = rgb2lin(normal_image);
     
-    % Convert to normals
-    normals = normal_image * 2.0 - 1.0;
-
-    % Normalize the normal vectors
-    lengths = sqrt(sum(normals.^2, 3));
-    normals(:, :, 1) = normals(:, :, 1) ./ lengths;
-    normals(:, :, 2) = normals(:, :, 2) ./ lengths;
-    normals(:, :, 3) = normals(:, :, 3) ./ lengths;
-   
-    normal_image = normals;
+    %% this is done in the code, uneeded 
+%     % Convert to normals
+%     normals = normal_image * 2.0 - 1.0;
+% 
+%     % Normalize the normal vectors
+%     lengths = sqrt(sum(normals.^2, 3));
+%     normals(:, :, 1) = normals(:, :, 1) ./ lengths;
+%     normals(:, :, 2) = normals(:, :, 2) ./ lengths;
+%     normals(:, :, 3) = normals(:, :, 3) ./ lengths;
+%    
+%     normal_image = normals;
 
     %normalise ISOs for spec text (only)
     ISO = isoValues(subj +1,2);

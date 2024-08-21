@@ -44,6 +44,8 @@ BSDF *PlasticMaterial::GetBSDF(const DifferentialGeometry &dgGeom,
                                MemoryArena &arena) const {
     // Allocate _BSDF_, possibly doing bump mapping with _bumpMap_
     DifferentialGeometry dgs;
+    DifferentialGeometry DiffDgs; // this is the diff geometry for the diffuse component
+
     if (bumpMap)
         Bump(bumpMap, dgGeom, dgShading, &dgs);
 
@@ -54,8 +56,9 @@ BSDF *PlasticMaterial::GetBSDF(const DifferentialGeometry &dgGeom,
 
     else
         dgs = dgShading;
-    BSDF *bsdf = BSDF_ALLOC(arena, BSDF)(dgs, dgGeom.nn);
-    Spectrum kd = Kd->Evaluate(dgs).Clamp();
+    DiffDgs = dgShading; // this is the diff geometry for the diffuse component, we just copy the shading geometry
+    BSDF *bsdf = BSDF_ALLOC(arena, BSDF)(DiffDgs, dgGeom.nn);
+    Spectrum kd = Kd->Evaluate(DiffDgs).Clamp(); // I've edited this so that kd uses the non-bumped/normaled differential geometry
     if (!kd.IsBlack()) {
         BxDF *diff = BSDF_ALLOC(arena, Lambertian)(kd);
         bsdf->Add(diff);

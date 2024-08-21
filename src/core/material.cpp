@@ -110,7 +110,7 @@ void Material::Norm_From_Spectrum(const Reference<Texture<Spectrum> > &d,
 	DifferentialGeometry *dgBump) {
 	// Compute offset positions and evaluate displacement texture
 	DifferentialGeometry dgEval = dgs;
-
+  // calculate normals -- so maybe they still need to be normalized?
 	Spectrum bump_spectrum = d->Evaluate(dgs);
 	float* x_val_normal = bump_spectrum.nextSample(0);
 	*x_val_normal = ((*x_val_normal * 2) - 1);
