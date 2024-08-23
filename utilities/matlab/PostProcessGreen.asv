@@ -1,0 +1,16 @@
+%PostGreen 
+path = "E:\Skin_code\data\ICT_3DRFE_mod\S000\shader\"; 
+%% load the ground truth image i.e. pigmentation is GT or perm whatever 
+im = exrread(path);
+
+%% load its mask 
+% this should be in the files for SD painting -- actually just load uv pass
+% and thresh it
+
+uv = exrread("E:\pbrt-v2-skinPat\UVPasses\UVSubj000.exr");
+
+uv(uv>0.5) = 1; % should thresh it
+
+%% apply mask, multiply by coeff
+
+%mask
