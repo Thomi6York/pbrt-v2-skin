@@ -26,7 +26,7 @@ perms = 'all' #set to 'all' to render all permutations, otherwise select permID'
 
 
 #scaling options
-scaleType = 'Additive' #multiplicative or additive
+scaleType = 'Multiplicative' #multiplicative or additive
 scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
 #scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
 
@@ -44,7 +44,7 @@ NoSpec = False #render the NoSpec scenes
 
 LightingCase = 1; # 1 is full file, 2 is without overhead lighting 
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
-SkipMatlab = True #skip the matlab script and just render the scenes for debugging
+SkipMatlab = False #skip the matlab script and just render the scenes for debugging
 
 pathHandle = 'MultipleScalings\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
