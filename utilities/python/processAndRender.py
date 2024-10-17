@@ -14,7 +14,7 @@ import csv
 
 #dataset at: C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\Practical Rendering\Skin_code\data\ICT_3DRFE_mod
 
-sample = 8; #default but will always round up to a power of 2
+sample = 30; #default but will always round up to a power of 2
 
 
 subjects = [0]; #subjects to render -- these are the subjects we are inverse rendering
@@ -26,10 +26,14 @@ perms = 'all' #set to 'all' to render all permutations, otherwise select permID'
 
 
 #scaling options
-scaleType = 'Additive' #multiplicative or additive
-scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
-#scaleMagnitude = list(range(2, 10)) #scalings of skin edits 
+#scaleType = 'Additive' #multiplicative or additive
+scaleType = 'Multiplicative' #multiplicative or additive
 
+if scaleType == 'Additive':
+    scaleMagnitude = list(range(1, 10)) #scalings of skin edits
+
+elif scaleType == 'Multiplicative':
+        scaleMagnitude = list(range(2, 10)) # no point in rendering 1 as it is the same as the original image for multiplicative scaling
 
 #set options for the script
 batchRenderGT = False #will render all the GT scenes in the batch script
@@ -44,7 +48,7 @@ NoSpec = False #render the NoSpec scenes
 
 LightingCase = 1; # 1 is full file, 2 is without overhead lighting 
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
-SkipMatlab = True #skip the matlab script and just render the scenes for debugging
+SkipMatlab = False #skip the matlab script and just render the scenes for debugging
 
 pathHandle = 'MultipleScalings\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
@@ -53,7 +57,7 @@ kr1 = False #render with homogenous specularity of 1
 
 
 fileName = 'normTex' + fileHandle # add extensions later
-customName = 'GroundTruthNoOverheadNoSpecNewMaps' #custom name for the output file  
+customName = 'Final' #custom name for the output file  
 outFileName = fileName + customName + scaleType # to rerun with diff output name
 
 
@@ -153,7 +157,6 @@ with open(".\\utilities\\csv\\subjects.csv", "w") as f:
 def GroundTruthRender(pathInfo,options):
     overwriteALL = False
     skipAll = False
-
     subjects = getSubjects(options)
     
     sample = options["sample"]
@@ -295,8 +298,6 @@ def renderPerms(pathInfo,options):
                     permPathInfo["scenePath"] = scenePath+ "\\perms\\"
                     permPathInfo["renderPath"] = renderPath + "\\perms\\"
 
-                    
-                    
                     #get cache text file names 
                     cache_files = glob.glob(f"{permPathInfo["cachePath"]}*.txt")
                     #loop through the permutations in the cache file's and generate scenes 

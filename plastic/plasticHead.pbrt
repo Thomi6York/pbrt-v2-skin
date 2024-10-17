@@ -1,10 +1,10 @@
 
     # PBRT scene file with parameters 0 and 0
       
-    Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "plasticNormalsFixedGeomtery2.exr"
+    Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "plasticNormalsFixedFinal.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
-Sampler "lowdiscrepancy" "integer pixelsamples" 8 #changed to 30 to improve res and remove specular artifacts (low makes worse)
+Sampler "lowdiscrepancy" "integer pixelsamples" 30 #changed to 30 to improve res and remove specular artifacts (low makes worse)
 
 
 WorldBegin

@@ -4,7 +4,7 @@
     Film "image" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "greenHead.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
-Sampler "lowdiscrepancy" "integer pixelsamples" 4 #changed to 30 to improve res and remove specular artifacts (low makes worse)
+Sampler "lowdiscrepancy" "integer pixelsamples" 30 #changed to 30 to improve res and remove specular artifacts (low makes worse)
 
 SurfaceIntegrator "multipolesubsurface" #this is likely what controls specularity, and has an effect which overwrites texture input 
   "integer maxdepth" 5 #changed from 5 to 2 -- no effect

@@ -23,7 +23,7 @@ y = 418;
 
 figure;imshow(Out_Img); hold on; plot(lineSamp,y,'-x')
 
-debug = 0;
+debug = 1;
 %% 
 meanArray = zeros(length(subjs),length(lineSamp));
 count = 1;
@@ -39,19 +39,32 @@ for subj = subjs
     
 
     subj_id_string = ['S' num2str(subj, '%03d')];
-    dataSetPath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\", subj_id_string,  "\shader\");
-    imagePath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\",  subj_id_string, "\shader\diff_texture.bmp"); %load from pigment maps bc image is normalised
-    specPath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\", subj_id_string ,"\shader\spec_textureISONormFlipped.exr");
-    normalPath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\", subj_id_string ,"\shader\spec_normalFlipped.exr");
+    dataSetPath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\PilotDataSet\", subj_id_string,  "\shader\");
+    imagePath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\PilotDataSet\",  subj_id_string, "\shader\diff_texture.bmp"); %load from pigment maps bc image is normalised
+    specPath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\PilotDataSet\", subj_id_string ,"\shader\spec_textureISONormFlipped.exr");
+    normalPath = strcat("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\PilotDataSet\", subj_id_string ,"\shader\spec_normalFlipped.exr");
     pigmentMaps = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\utilities\matlab\PigmentMapsFull\',subj_id_string,'newMaps.mat'); 
     face_mask = imread(strcat(dataSetPath, subj_id_string, '_E00_Mask.bmp')); 
     face_mask = face_mask(:,:,2)>0;
+    
     
     Out_Img = imread(imagePath);
     Out_Img = rgb2lin(Out_Img);
     Out_Img = double(Out_Img)./255;
     Out_Img = iso_norm(Out_Img,subj,isoValues); 
-    
+
+
+   load(pigmentMaps);
+
+if debug
+    figure; imshow(lin2rgb(Out_Img));
+    figure; subplot(221);
+    imagesc(Out_Hem);
+    title(sprintf('hem map for %d', subj));
+    subplot(222); imagesc(Out_Mel); title(sprintf('mel map for %d', subj));
+    subplot(223); imagesc(Out_Epth); title(sprintf('Ep map for %d', subj));
+    subplot(224); imagesc(Out_Beta); title(sprintf('Beta map for %d', subj));
+end
     %spec text
     spec = exrread(specPath);
     spec = flipud(spec); % flip due to saving
@@ -159,6 +172,72 @@ end
 %% line plot pigments against each other
 figure; scatter(meanArray(:,1),meanArray(:,2)); title('Hem vs Mel'); xlabel('hem');ylabel('mel')
 
+%% run a distance corr to try and plot -- the hem and mel graphs look the best choice
+x = meanArray(:,1);
+x = x(:);
+y = means;
+dcor2 = distcorr(x,y); 
+
+x = meanArray(:,2);
+x=x(:);
+y = means;
+dcor1 = distcorr(x,y); 
+
+% Number of permutations
+numPermutations = 1000;
+
+% Calculate original distance correlations
+x1 = meanArray(:,1);
+y = means;
+originalDcor1 = distcorr(x1, y);
+
+x2 = meanArray(:,2);
+originalDcor2 = distcorr(x2, y);
+
+% Initialize arrays to store permuted correlations
+permutedDcor1 = zeros(numPermutations, 1);
+permutedDcor2 = zeros(numPermutations, 1);
+
+% Perform permutation test
+for i = 1:numPermutations
+    permutedY = y(randperm(length(y)));
+    permutedDcor1(i) = distcorr(x1, permutedY);
+    permutedDcor2(i) = distcorr(x2, permutedY);
+end 
+
+% Calculate p-values
+pValue1 = mean(permutedDcor1 >= originalDcor1);
+pValue2 = mean(permutedDcor2 >= originalDcor2);
+
+% Display results
+fprintf('Original Distance Correlation (Hem vs Specular): %.4f\n', originalDcor1);
+fprintf('p-value: %.4f\n', pValue1);
+fprintf('Original Distance Correlation (Mel vs Specular): %.4f\n', originalDcor2);
+fprintf('p-value: %.4f\n', pValue2);
+
+% Plot histograms of permuted correlations
+figure;
+subplot(1, 2, 1);
+histogram(permutedDcor1, 'Normalization', 'probability');
+hold on;
+xline(originalDcor1, 'r', 'LineWidth', 2);
+text(originalDcor1, 0.9, sprintf('p-value: %.4f', pValue1), 'Color', 'r');
+title('Permutation Test for Hem vs Specular');
+xlabel('Distance Correlation');
+ylabel('Probability');
+legend('Permuted', 'Original');
+
+subplot(1, 2, 2);
+histogram(permutedDcor2, 'Normalization', 'probability');
+hold on;
+xline(originalDcor2, 'r', 'LineWidth', 2);
+text(originalDcor2, 0.9, sprintf('p-value: %.4f', pValue2), 'Color', 'r');
+title('Permutation Test for Mel vs Specular');
+xlabel('Distance Correlation');
+ylabel('Probability');
+legend('Permuted', 'Original');
+
+%% 
 
 %%
 

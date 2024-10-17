@@ -1,5 +1,6 @@
 %PostGreen 
-path = "E:\Skin_code\data\ICT_3DRFE_mod\S000\shader\"; 
+%perm 5 is always GT
+path = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\experiments\MultipleScalings\groundTruth\perms\S000_PermNo_5_ManipnormTexISONormnormTexISONormFinalMultiplicative2.0.exr"; 
 %% load the ground truth image i.e. pigmentation is GT or perm whatever 
 im = exrread(path);
 
@@ -7,14 +8,14 @@ im = exrread(path);
 % this should be in the files for SD painting -- actually just load uv pass
 % and thresh it
 
-uv = exrread("E:\pbrt-v2-skinPat\UVPasses\UVSubj000.exr");
+uv = exrread("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\UVPasses\UVSubj000.exr");
 mask = uv; 
 
 mask(uv>0.5) = 1; % should thresh it
 
 %remove other color channels
 mask = mask(:,:,1); 
-
+mask = logical(mask);
 
 ImSize = size(im);
 
@@ -31,7 +32,7 @@ m2 =   [ 0.3218    0.1676    0.0508;
 
 
 %mask
-vecIm = zeros(size(mask));
+vecIm = zeros(size(mask,1)*size(mask,2),3);
 vecIm(mask) = im(mask);
 
 %vectorize
@@ -41,16 +42,24 @@ for i = 1:3
 end
 
 
-outVec = ImvecIm*m1;
+outVec = vecIm*m1;
 
 
 %% reshape
 
+%copy background in 
 outIm = reshape(outVec,ImSize);
 
-%copy background in 
-outIm(~mask) = im(~mask);
+% make mask 3d
+for i =1:3 
+    mask3D(:,:,i) = mask;
+end
 
+figure; imshow(im);
+
+outIm(~mask3D) = double(im(~mask3D));
+
+figure; imshow(lin2rgb(outIm))
 
 exrwrite(outIm,'PostGreenIm.exr');
 

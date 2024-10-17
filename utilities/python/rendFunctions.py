@@ -212,12 +212,16 @@ def readCacheFile(cache_file,subjects):
             betaConc = float(lines[6].split(":")[1].strip()) #beta
             epThickness = float(lines[8].split(":")[1].strip()) #this is epth
             epThickness = epThickness*0.001 #scale 
-            permID = lines[9].split(":")[1].strip() #perm ID 
-            if len(lines) > 10:
+            #permID = lines[9].split(":")[1].strip() #perm ID 
+            if len(lines) > 9:
+                permID = lines[9].split(":")[1].strip()
                 scaleType = lines[10].split(":")[1].strip()
+                scaleMagnitude = float(lines[11].split(":")[1].strip())
             else: 
+                permID = ""
                 scaleType = ""
-            scaleMagnitude = float(lines[11].split(":")[1].strip())
+                scaleMagnitude = ""
+            
 
             #create a single object for all values
             params = {
@@ -292,7 +296,7 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
         texture = f"{subjNum}{fileName}.exr" # get the texture
     else: #for permuted textures
         renderPath = f"{renderDir}{subjNum}_PermNo_{permID}_Manip"
-        scene_name = f"{subjNum}_PermNo_{permID}_Manip{outFileName}{scaleType}{scaleMagnitude}.pbrt"
+        scene_name = f"{subjNum}_PermNo_{permID}_Manip{outFileName}{scaleMagnitude}.pbrt"
         texture = f"{subjNum}PermID{permID}_ScaleMag{int(scaleMagnitude)}{fileName}_{scaleType}.exr" # get the texture 
     
 
@@ -335,7 +339,7 @@ def processFiles(pathInfo, cacheFile,batch_script,LightingCase,subjects,sample=1
     if (not os.path.exists(renderPath)) | overwriteALL == True:
         scene_command = f'".\\bin\\pbrt.exe" "{scene_file}"\n'
         #f.write(scene_command)
-    elif skipALL == True:
+    elif skipALL == True & os.path.exists(renderPath):
         scene_command = ""
     else :
         print(f"Scene {renderPath} already rendered. Overwrite?")

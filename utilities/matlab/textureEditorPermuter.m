@@ -30,10 +30,6 @@ isoValues = readmatrix(strcat(currentDir,'utilities\\csv\\CaptureISO_perSubject.
 subjects = readmatrix(strcat(currentDir,'utilities\\csv\\subjects.csv'));
 subjects = subjects'; 
 
-% create an Additive scale
-scaleType = 'Multiplicative'; % set to Multiplicative for now
-%scaleType = 'Additive'; % set to Additive for now
-
 %% Load chrom path stuff
 load(".\data\LUTs_luxeon_CIEcmfwithbeta.mat");
 load LUTs_Lab; % get the lab version to avoid computing on the fly
@@ -104,10 +100,11 @@ fixBandK = logical(options{2,2});
 scaleType = options{3,2};
 tmp = options{4,2}; 
 %format the scaling types in options due to how python writes it
-options{4,2} = str2num(cell2mat(strsplit(tmp, '[')));
-
+options{4,2} = str2double(strsplit(tmp(2:end), ','));
 tmp = options{4,end};
-options{4,end} = str2num(cell2mat(strsplit(tmp,']')));
+options{4,end} = str2double(strsplit(tmp(1:end-1), '['));
+
+
 
 scaleMagnitude = cell2mat(options(4,2:size(options,2)));
 
@@ -134,7 +131,7 @@ for subj = subjects %subjects
 
     % check whether maps are precalculated
    
-    % load the mask for the face
+    % load the face_mask for the face
     path = strcat('C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\scenes\PilotDataSet\', rendering.subj_id_string, '\shader\');
     addpath(path);
     face_mask = imread(strcat(path, rendering.subj_id_string,'_E00_Mask.bmp')); 
@@ -168,10 +165,9 @@ for subj = subjects %subjects
     %% calculate permutations for subj
     face_mask = imread(strcat(path, rendering.subj_id_string, '_E00_Mask.bmp')); 
     face_mask = face_mask(:,:,2)>0;
-    face_mask = face_mask(1:subsampling_factor_img:end,1:subsampling_factor_img:end); %subsample mask
+    face_mask = face_mask(1:subsampling_factor_img:end,1:subsampling_factor_img:end); %subsample face_mask
     face_mask1D = reshape(face_mask,[],1); 
 
-    
     if debug
         disp('Displaying input texture, linear');
         figure; imshow(lin2rgb(Out_Img)); title('Inverse texture, linear');
@@ -273,8 +269,7 @@ for subj = subjects %subjects
                 Out_Epth = reshape(Out_Epth,[],1);
                 Out_Beta = reshape(Out_Beta,[],1);
     
-                bestBeta = unique(Out_Beta(face_mask)); %get the unique beta values in the face mask - should be homogenous 
-    
+                bestBeta = unique(Out_Beta(face_mask)); %get the unique beta values in the face face_mask - should be homogenous 
                 [~,bestBeta] = min(abs(bestBeta-Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
     
                 Out_Hem2 = clampEm(Out_Hem2,Hem_sampling);
@@ -329,9 +324,7 @@ for subj = subjects %subjects
 %     
 %                 % use interp3 for sanity check -- should give same result
                  extracted_imagesInterp = interpLUT(interpData);
-            
-            
-    
+
                 LUTSDims = size(LUTs);
             
                 LUTs1D= reshape(LUTs, [], 3); 
@@ -354,9 +347,9 @@ for subj = subjects %subjects
     
                 Out_Img2 = Out_Img22; 
     
-                % apply mask
+                % apply face_mask
                 for i = 1:3
-                    Out_Img22(:,:,i) = Out_Img22(:,:,i) .* double(face_mask); 
+                    Out_Img2(:,:,i) = Out_Img2(:,:,i) .* double(face_mask); 
                     %Out_Img23(:,:,i) = Out_Img23(:,:,i) .* double(face_mask); 
                 end
     
@@ -376,7 +369,7 @@ for subj = subjects %subjects
                     imshow(lin2rgb(Out_Img)); 
                     title('Input Texture'); 
                     subplot(122); 
-                    imshow(lin2rgb(Out_Img22)); 
+                    imshow(lin2rgb(Out_Img2)); 
                     title(strcat('Permuted Texture with values mel:', num2str(perms(i,1)), ' and hem ', num2str(perms(i,2)))); 
     
     
@@ -393,7 +386,12 @@ for subj = subjects %subjects
     
                 end
     
-                %% save outputs 
+               
+    
+                %modulate the texture
+                disp('Modulating texture via normalization with the 3rd percentile of the chromophores');
+                
+                  %% save outputs 
                 % create a new filename handle for permutation ID
                 rendering.fileNameHandleOut = strcat('PermID', num2str(count), '_ScaleMag', num2str(sm),fileName);
     
@@ -401,19 +399,12 @@ for subj = subjects %subjects
                     rendering.fileNameHandleOut = [debugName, rendering.fileNameHandleOut]; %append a name for debugs
                 end
     
-                %save the new maps
-                save(strcat(permPathPig, rendering.subj_id_string, rendering.fileNameHandleOut, num2str(sm), '_.mat'),"Out_Epth", "Out_Beta","Out_Hem2","Out_Img2","Out_Mel2");
-    
-                %modulate the texture
-                disp('Modulating texture via normalization with the 3rd percentile of the chromophores');
-                
-                
                 % add new pigment maps to the rendering struct
                 rendering.Out_Mel2 = Out_Mel2;
                 rendering.Out_Hem2 = Out_Hem2;
                 rendering.Out_Epth = Out_Epth;
                 rendering.Out_Beta = Out_Beta;
-                rendering.Out_Img = Out_Img22;
+                rendering.Out_Img = Out_Img2;
     
                 %this handles saving the texture and cache file
                 rendering.scaleType = scaleType;
@@ -421,6 +412,17 @@ for subj = subjects %subjects
                 normTex= texNormalize(rendering);
     
                 disp(['Texture normalized and saved to ' permPathTex]);
+
+                % reshape the 1d images to the 3d masked images
+                Out_Mel2 = reshape(Out_Mel2, dims(1),dims(2));
+                Out_Hem2 = reshape(Out_Hem2, dims(1),dims(2));
+                Out_Epth = reshape(Out_Epth, dims(1),dims(2));
+                Out_Beta = reshape(Out_Beta, dims(1),dims(2));
+
+                rendering.fileNameHandleOut = strcat('PermID', num2str(count), '_ScaleMag', num2str(sm),fileName,scaleType);
+               
+                %save the new maps
+                save(strcat(permPathPig, rendering.subj_id_string, rendering.fileNameHandleOut, '_.mat'),"Out_Epth", "Out_Beta","Out_Hem2","Out_Img2","Out_Mel2");
             end
 
         end 
@@ -457,27 +459,24 @@ disp('All subjects done');
 
 function normIm= texNormalize(rendering)
 %%
-    % get 3rd percentile w/mask for homogenous skin layer settings
+    % get 3rd percentile w/face_mask for homogenous skin layer settings
     faceMel = rendering.Out_Mel2(rendering.face_mask);
 
     melPerc = prctile(rendering.Out_Mel2(rendering.face_mask),3, 'all');
 
     disp(['3rd perc mel is: ' num2str(melPerc)])
 
-    % get 3rd percentile w/mask for homogenous skin layer settings
+    % get 3rd percentile w/face_mask for homogenous skin layer settings
     hemPerc = prctile(rendering.Out_Hem2(rendering.face_mask),3,'all');
     disp(['3rd perc hem is: ' num2str(hemPerc)])
 
     [~,melInd] = min(abs((melPerc - rendering.Mel_sampling)));
-    [~,hemInd] = min(abs(hemPerc -rendering.Hem_sampling));
+    [~,hemInd] = min(abs(hemPerc - rendering.Hem_sampling));
     [~,betaInd] = min(abs(mean(rendering.Out_Beta,'all')-rendering.Beta_sampling)); %set this to the mean 
     [~,epthInd] = min(abs(mean(rendering.Out_Epth,'all')-rendering.Epth_sampling)); %set this to the mean
     
-
-    bestBeta = unique(rendering.Out_Beta(rendering.face_mask)); %get the unique beta values in the face mask - should be homogenous 
+    bestBeta = unique(rendering.Out_Beta(rendering.face_mask)); %get the unique beta values in the face face_mask - should be homogenous 
     [~,bestBeta] = min(abs(bestBeta-rendering.Beta_sampling),[],2); %should be the same if we've reclamped the previous values 
-
-        
 
     % set up the struct 
      % set up interp data structs 
