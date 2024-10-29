@@ -212,6 +212,9 @@
     <ClInclude Include="..\core\transform.h" />
     <ClInclude Include="..\core\volume.h" />
     <ClInclude Include="..\film\image.h" />
+    <ClInclude Include="..\film\spectralImage.h" />
+    <ClInclude Include="..\film\spectralImageNoCamera.h" />
+    <ClInclude Include="..\film\XYZfilm.h" />
     <ClInclude Include="..\filters\box.h" />
     <ClInclude Include="..\filters\gaussian.h" />
     <ClInclude Include="..\filters\mitchell.h" />
@@ -1184,6 +1187,9 @@
     <ClCompile Include="..\core\transform.cpp" />
     <ClCompile Include="..\core\volume.cpp" />
     <ClCompile Include="..\film\image.cpp" />
+    <ClCompile Include="..\film\spectralImage.cpp" />
+    <ClCompile Include="..\film\spectralImageNoCamera.cpp" />
+    <ClCompile Include="..\film\XYZfilm.cpp" />
     <ClCompile Include="..\filters\box.cpp" />
     <ClCompile Include="..\filters\gaussian.cpp" />
     <ClCompile Include="..\filters\mitchell.cpp" />

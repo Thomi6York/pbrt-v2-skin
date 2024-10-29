@@ -43,7 +43,7 @@
 #include "rng.h"
 #include "spectrum.h"
 #include "kdtree.h"
-
+#include <cmath> 
 // Reflection Declarations
 Spectrum FrDiel(float cosi, float cost, const Spectrum &etai,
                 const Spectrum &etat);
@@ -464,7 +464,35 @@ private:
 	Fresnel* fresnel;
 };
 
+// newer blinn implementation 
+// class Blinn : public MicrofacetDistribution {
+// public:
+//     Blinn(float e, const Spectrum &reflectance) { if (e > 10000.f || isnan(e)) e = 10000.f;
+//                      exponent = e;}
+//     // Blinn Public Methods
+//      static float G(const Vector &wo, const Vector &wi, const Vector &wh) {
+//         float NdotWh = AbsCosTheta(wh);
+//         float NdotWo = AbsCosTheta(wo);
+//         float NdotWi = AbsCosTheta(wi);
+//         float WOdotWh = AbsDot(wo, wh);
+//         return min(1.f, min((2.f * NdotWh * NdotWo / WOdotWh),
+//                             (2.f * NdotWh * NdotWi / WOdotWh)));
+//     }
 
+//     Spectrum f(const Vector &wo, const Vector &wi) const;
+//     float D(const Vector &wh) const {
+//         float costhetah = AbsCosTheta(wh);
+//         return (exponent+2) * INV_TWOPI * powf(costhetah, exponent);
+//     }
+//     virtual void Sample_f(const Vector &wo, Vector *wi, float u1, float u2, float *pdf) const;
+//     virtual float Pdf(const Vector &wo, const Vector &wi) const;
+// private:
+//     float exponent;
+//     //const Spectrum R;
+//    // Normal nn, gn;
+// };
+
+// original blinn code 
 class Blinn : public MicrofacetDistribution {
 public:
     Blinn(float e) { if (e > 10000.f || isnan(e)) e = 10000.f;
@@ -474,8 +502,8 @@ public:
         float costhetah = AbsCosTheta(wh);
         return (exponent+2) * INV_TWOPI * powf(costhetah, exponent);
     }
-    virtual void Sample_f(const Vector &wo, Vector *wi, float u1, float u2, float *pdf) const;
-    virtual float Pdf(const Vector &wo, const Vector &wi) const;
+    virtual void Sample_f(const Vector &wi, Vector *sampled_f, float u1, float u2, float *pdf) const;
+    virtual float Pdf(const Vector &wi, const Vector &wo) const;
 private:
     float exponent;
 };

@@ -347,6 +347,7 @@ public:
                                             wl0, wl1);
             Z.c[i] = AverageSpectrumSamples(CIE_lambda, CIE_Z, nCIESamples,
                                             wl0, wl1);
+            yint += Y.c[i];
         }
 
         // Compute RGB to spectrum functions for _SampledSpectrum_
@@ -399,6 +400,14 @@ public:
         xyz[1] *= scale;
         xyz[2] *= scale;
     }
+
+    //Andy Added -- from spectral rendering 
+    void GetOrigC(float OrigC[nSpectralSamples]) const {
+        for (int i = 0; i < nSpectralSamples; ++i) {
+            OrigC[i] = c[i];
+        }
+    }
+
     float y() const {
         float yy = 0.f;
         for (int i = 0; i < nSpectralSamples; ++i)
@@ -432,6 +441,7 @@ public:
 private:
     // SampledSpectrum Private Data
     static SampledSpectrum X, Y, Z;
+    static float yint;
     static SampledSpectrum rgbRefl2SpectWhite, rgbRefl2SpectCyan;
     static SampledSpectrum rgbRefl2SpectMagenta, rgbRefl2SpectYellow;
     static SampledSpectrum rgbRefl2SpectRed, rgbRefl2SpectGreen;

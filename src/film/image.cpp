@@ -32,7 +32,7 @@
 
 // film/image.cpp*
 #include "stdafx.h"
-#include "film/image.h"
+#include "image.h"
 #include "spectrum.h"
 #include "parallel.h"
 #include "imageio.h"
@@ -75,7 +75,7 @@ ImageFilm::ImageFilm(int xres, int yres, Filter *filt, const float crop[4],
 
 
 void ImageFilm::AddSample(const CameraSample &sample,
-                          const Spectrum &L) {
+                          const Spectrum &L, const Ray &currentRay) {  //Andy changed: added the 3rd parameter since we changed the film class to allow for multispectral!!!
     // Compute sample's raster extent
     float dimageX = sample.imageX - 0.5f;
     float dimageY = sample.imageY - 0.5f;

@@ -43,6 +43,6 @@
 RGBSpectrum *ReadImage(const string &name, int *xSize, int *ySize);
 void WriteImage(const string &name, float *pixels, float *alpha,
     int XRes, int YRes, int totalXRes, int totalYRes, int xOffset,
-    int yOffset);
+    int yOffset, int nChannels = 3);
 
 #endif // PBRT_CORE_IMAGEIO_H

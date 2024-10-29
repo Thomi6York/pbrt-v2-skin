@@ -54,7 +54,7 @@ public:
         delete filter;
         delete[] filterTable;
     }
-    void AddSample(const CameraSample &sample, const Spectrum &L);
+    void AddSample(const CameraSample &sample, const Spectrum &L, const Ray &currentRay);
     void Splat(const CameraSample &sample, const Spectrum &L);
     void GetSampleExtent(int *xstart, int *xend, int *ystart, int *yend) const;
     void GetPixelExtent(int *xstart, int *xend, int *ystart, int *yend) const;

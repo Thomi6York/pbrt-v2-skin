@@ -3,6 +3,9 @@
  
 #if defined(_MSC_VER)
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include "pbrt.h"
 #include "camera.h"
 #include "scene.h"

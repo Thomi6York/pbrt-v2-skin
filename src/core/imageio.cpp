@@ -54,6 +54,9 @@ static RGBSpectrum *ReadImagePFM(const string &filename, int *xres, int *yres);
 RGBSpectrum *ReadImage(const string &name, int *width, int *height) {
     if (name.size() >= 5) {
         uint32_t suffixOffset = name.size() - 4;
+        // std::cout << "suffixOffset: " << suffixOffset << std::endl;
+        // // display the suffix
+        // std::cout << "suffix: " << name.c_str() + suffixOffset << std::endl;
 #ifdef PBRT_HAS_OPENEXR
         if (!strcmp(name.c_str() + suffixOffset, ".exr") ||
             !strcmp(name.c_str() + suffixOffset, ".EXR"))
@@ -76,15 +79,29 @@ RGBSpectrum *ReadImage(const string &name, int *width, int *height) {
 
 
 void WriteImage(const string &name, float *pixels, float *alpha, int xRes,
-                int yRes, int totalXRes, int totalYRes, int xOffset, int yOffset) {
+                int yRes, int totalXRes, int totalYRes, int xOffset, int yOffset, int nChannels) {
     if (name.size() >= 5) {
         uint32_t suffixOffset = name.size() - 4;
+        std::cout << "suffixOffset: " << suffixOffset << std::endl;
+        std::cout << "nchannels: " << nChannels << std::endl;
+        std::cout << "suffix: " << name.c_str() + suffixOffset << std::endl;
+        
 #ifdef PBRT_HAS_OPENEXR
         if (!strcmp(name.c_str() + suffixOffset, ".exr") ||
-            !strcmp(name.c_str() + suffixOffset, ".EXR")) {
-             WriteImageEXR(name, pixels, alpha, xRes, yRes, totalXRes,
-                           totalYRes, xOffset, yOffset);
-             return;
+            !strcmp(name.c_str() + suffixOffset, ".EXR")) 
+        // std::cout<<"writing EXR"<<std::endl;
+        // std::cout<< nChannels == 3 << std::endl; 
+            {
+            if (nChannels == 3){
+                WriteImageEXR(name, pixels, alpha, xRes, yRes, totalXRes,
+                            totalYRes, xOffset, yOffset);
+                return;}
+            // else if(nChannels>3){
+            //     WriteMultispectralEXR(name, pixels, alpha, xRes, yRes, totalXRes,
+            //                 totalYRes, xOffset, yOffset, nChannels);
+            //     return;
+            // }
+            
         }
 #endif // PBRT_HAS_OPENEXR
         if (!strcmp(name.c_str() + suffixOffset, ".tga") ||
@@ -101,13 +118,14 @@ void WriteImage(const string &name, float *pixels, float *alpha, int xRes,
     }
     Error("Can't determine image file type from suffix of filename \"%s\"",
           name.c_str());
-}
+};
 
 
 #ifdef PBRT_HAS_OPENEXR
 #if defined(PBRT_IS_WINDOWS)
 #define hypotf hypot // For the OpenEXR headers
 #endif
+#include <ImfOutputFile.h>
 #include <ImfInputFile.h>
 #include <ImfRgbaFile.h>
 #include <ImfChannelList.h>
@@ -115,6 +133,12 @@ void WriteImage(const string &name, float *pixels, float *alpha, int xRes,
 #include <half.h>
 using namespace Imf;
 using namespace Imath;
+// #include <ImfStringAttribute.h>
+// #include <ImfMatrixAttribute.h>
+// #include <ImfName.h>
+//#include <ImfArray.h> // Ensure this is included for Array2D
+//using namespace Imf;
+//using namespace Imath;
 
 // EXR Function Definitions
 static RGBSpectrum *ReadImageEXR(const string &name, int *width, int *height) {
@@ -176,6 +200,37 @@ static void WriteImageEXR(const string &name, float *pixels,
     }
 
     delete[] hrgba;
+}
+
+void WriteMultispectralEXR(const std::string &filename, float *pixels, int width, int height, int numChannels) {
+    std::vector<float*> channelData(numChannels);
+    for (int c = 0; c < numChannels; ++c) {
+        channelData[c] = new float[width * height];
+        for (int i = 0; i < width * height; ++i) {
+            channelData[c][i] = pixels[numChannels * i + c];
+        }
+    }
+
+    Box2i displayWindow(V2i(0, 0), V2i(width - 1, height - 1));
+    Box2i dataWindow(V2i(0, 0), V2i(width - 1, height - 1));
+
+    Header header(displayWindow, dataWindow);
+    for (int c = 0; c < numChannels; ++c) {
+        header.channels().insert("Channel" + std::to_string(c), Channel(Imf::FLOAT));
+    }
+
+    OutputFile file(filename.c_str(), header);
+    FrameBuffer frameBuffer;
+    for (int c = 0; c < numChannels; ++c) {
+        frameBuffer.insert("Channel" + std::to_string(c), Slice(Imf::FLOAT, (char *)(&channelData[c][0]), sizeof(float), sizeof(float) * width));
+    }
+
+    file.setFrameBuffer(frameBuffer);
+    file.writePixels(height);
+
+    for (int c = 0; c < numChannels; ++c) {
+        delete[] channelData[c];
+    }
 }
 
 

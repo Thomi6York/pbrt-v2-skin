@@ -434,3 +434,6 @@ noSSHead.exr
 PaperFigs/bruteAlbedoBackground.exr
 PaperFigs/bruteAlbedoBackgroundgamma.exr
 PaperFigs/PCDielUV.png
+*.dat
+*.exr
+ssHeadSpectralGTSmalloldImpSmallerSpectralOldWrite_table.txt

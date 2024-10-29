@@ -67,6 +67,9 @@ BSDF *PlasticMaterial::GetBSDF(const DifferentialGeometry &dgGeom,
     if (!ks.IsBlack()) {
         Fresnel *fresnel = BSDF_ALLOC(arena, FresnelDielectric)(1.5f, 1.f);
         float rough = roughness->Evaluate(dgs);
+
+        // if we approximate rough to cook torrance
+        //float rough = log(distribution->D(wh)) * G(wo,wi,wh) *F;
         BxDF *spec = BSDF_ALLOC(arena, Microfacet)
                        (ks, fresnel, BSDF_ALLOC(arena, Blinn)(1.f / rough));
         bsdf->Add(spec);

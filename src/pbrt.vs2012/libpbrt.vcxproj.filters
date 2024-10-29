@@ -954,6 +954,15 @@
     <ClInclude Include="..\renderers\testrenderer.h">
       <Filter>Header Files\renderers</Filter>
     </ClInclude>
+    <ClInclude Include="..\film\spectralImage.h">
+      <Filter>Header Files\film</Filter>
+    </ClInclude>
+    <ClInclude Include="..\film\spectralImageNoCamera.h">
+      <Filter>Header Files\film</Filter>
+    </ClInclude>
+    <ClInclude Include="..\film\XYZfilm.h">
+      <Filter>Header Files\film</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\3rdparty\ilmbase-1.0.2\half.cpp">
@@ -1753,6 +1762,15 @@
     </ClCompile>
     <ClCompile Include="..\renderers\testrenderer.cpp">
       <Filter>Source Files\renderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\film\spectralImage.cpp">
+      <Filter>Source Files\film</Filter>
+    </ClCompile>
+    <ClCompile Include="..\film\spectralImageNoCamera.cpp">
+      <Filter>Source Files\film</Filter>
+    </ClCompile>
+    <ClCompile Include="..\film\XYZfilm.cpp">
+      <Filter>Source Files\film</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

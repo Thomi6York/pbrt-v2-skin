@@ -39,6 +39,7 @@
 #include "multipole.h"
 #include "kahansum.h"
 #include <stdarg.h>
+#include <cmath> // add cmath for log
 
 // BxDF Local Definitions
 struct IrregIsoProc {
@@ -225,7 +226,7 @@ Microfacet::Microfacet(const Spectrum &reflectance, Fresnel *f,
 }
 
 
-Spectrum Microfacet::f(const Vector &wo, const Vector &wi) const {
+Spectrum Microfacet::f(const Vector &wo, const Vector &wi) const { //cook torrance reflection
     float cosThetaO = AbsCosTheta(wo);
     float cosThetaI = AbsCosTheta(wi);
     if (cosThetaI == 0.f || cosThetaO == 0.f) return Spectrum(0.f);
@@ -460,7 +461,39 @@ float MicrofacetTransmission::Pdf(const Vector& wo, const Vector& wi) const {
 	return pdf;
 }
 
+// // this is the new code for the Blinn distribution to match the CT implementation
+// void Blinn::Sample_f(const Vector &wo, Vector *wi, float u1, float u2,
+//                      float *pdf) const {
 
+
+//     Vector wh = *wi + wo;
+//     wh = Normalize(wh);
+
+//     // Compute incident direction by reflecting about $\wh$
+//     *wi = -wo + 2.f * Dot(wo, wh) * wh;
+    
+//     //Fresnel computation using schlicks
+//     float cosThetaH = Dot(*wi, wh);
+//     float F = 
+
+//     // redefine roughness here to be the analytical solution 
+//     float exponent = log(D(wh)*G(wo, *wi, wh)*F)/(4*R*Dot(*wi,nn)*Dot(nn,wo))/log(Dot(wh,nn)); 
+
+//     // Compute sampled half-angle vector $\wh$ for Blinn distribution
+//     float costheta = powf(u1, 1.f / (exponent+1));
+//     float sintheta = sqrtf(max(0.f, 1.f - costheta*costheta));
+//     float phi = u2 * 2.f * M_PI;
+//     Vector wh = SphericalDirection<float>(sintheta, costheta, phi);
+//     if (!SameHemisphere(wo, wh)) wh = -wh;
+
+//     // Compute PDF for $\wi$ from Blinn distribution
+//     float blinn_pdf = ((exponent + 1.f) * powf(costheta, exponent)) /
+//                       (2.f * M_PI * 4.f * Dot(wo, wh));
+//     if (Dot(wo, wh) <= 0.f) blinn_pdf = 0.f;
+//     *pdf = blinn_pdf;
+// }
+
+// original code
 void Blinn::Sample_f(const Vector &wo, Vector *wi, float u1, float u2,
                      float *pdf) const {
     // Compute sampled half-angle vector $\wh$ for Blinn distribution
@@ -479,7 +512,6 @@ void Blinn::Sample_f(const Vector &wo, Vector *wi, float u1, float u2,
     if (Dot(wo, wh) <= 0.f) blinn_pdf = 0.f;
     *pdf = blinn_pdf;
 }
-
 
 float Blinn::Pdf(const Vector &wo, const Vector &wi) const {
     Vector wh = Normalize(wo + wi);
