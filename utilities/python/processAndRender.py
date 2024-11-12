@@ -17,12 +17,12 @@ import csv
 sample = 30; #default but will always round up to a power of 2
 
 
-subjects = [0]; #subjects to render -- these are the subjects we are inverse rendering
+subjects = [3,5]; #subjects to render -- these are the subjects we are inverse rendering
 #subjects = [0,3,5,7,22]; 
 #subjects =22; 
 
-perms = 'all' #set to 'all' to render all permutations, otherwise select permID's to render
- #perms ['1','2','3','4'] #set to 'all' to render all permutations, otherwise select permID's to render
+#perms = 'all' #set to 'all' to render all permutations, otherwise select permID's to render
+perms = ['5'] #set to 'all' to render all permutations, otherwise select permID's to render
 
 
 #scaling options
@@ -33,13 +33,13 @@ if scaleType == 'Additive':
     scaleMagnitude = list(range(1, 10)) #scalings of skin edits
 
 elif scaleType == 'Multiplicative':
-        scaleMagnitude = list(range(2, 10)) # no point in rendering 1 as it is the same as the original image for multiplicative scaling
+    scaleMagnitude = list(range(2, 10)) # no point in rendering 1 as it is the same as the original image for multiplicative scaling
 
 #set options for the script
 batchRenderGT = False #will render all the GT scenes in the batch script
 reinverseRenderAll = False # shouldn't need to re-inverse render all the subjects if you just want to edit the maps
 rewriteCachfiles = True #if you want to rewrite the cache files
-writeSceneFileGT = False
+writeSceneFileGT = False #write the scene files for the GT scenes
 
 permuteScene = True# avoid all perms options 
 generatePermTextures = True; batchRenderPerms = True; noSpecPerms = False
@@ -48,7 +48,7 @@ NoSpec = False #render the NoSpec scenes
 
 LightingCase = 1; # 1 is full file, 2 is without overhead lighting 
 fixBandEnd = True # fixes beta and clamps epidermal thickness betwee 0.3 and 0.10 assuming inverse rendering is done beforehand
-SkipMatlab = False #skip the matlab script and just render the scenes for debugging
+SkipMatlab = True #skip the matlab script and just render the scenes for debugging
 
 pathHandle = 'MultipleScalings\\' #customise this for output name -- don't use end
 fileHandle = 'ISONorm' #customise this for file details in the name, ensure no overwriting at the least 
@@ -310,6 +310,7 @@ def renderPerms(pathInfo,options):
                         overwriteALL, skipAll, scene_command = processFiles(permPathInfo, cache, batch_script1,LightingCase,subjects, sample, overwriteALL, skipAll, scaleType,scaleMagnitude)
                         #write to batch file
                         f1.write(scene_command)
+                        print("Written command")
 
                     #no spec perm scene
                     if (perms == 'all' and subjNumStr in subjects and options["noSpecPerms"] ==True and cacheScaleType==scaleType)|(options["noSpecPerms"] == True and subjNumStr in subjects and permID == perms and cacheScaleType==scaleType):

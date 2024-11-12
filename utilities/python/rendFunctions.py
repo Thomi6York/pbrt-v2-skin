@@ -32,7 +32,7 @@ def sceneEditor(params,pathInfo,LightingCase,sample=1):
     if LightingCase == 1:
     #write scene
         template = f"""
-            Film "XYZfilm" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "{outFilePath}"
+            Film "XYZfilm" "integer xresolution" [1280] "integer yresolution" [720] "string filename" ""{outFilePath}""
             LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
             Camera "perspective" "float fov" [30] 
             Sampler "lowdiscrepancy" "integer pixelsamples" {sample} #changed to 1 for brute render speed`

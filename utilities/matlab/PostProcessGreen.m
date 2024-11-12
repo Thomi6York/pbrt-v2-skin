@@ -1,6 +1,7 @@
 %PostGreen 
 %perm 5 is always GT
-path = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\experiments\MultipleScalings\groundTruth\perms\S000_PermNo_5_ManipnormTexISONormnormTexISONormFinalMultiplicative2.0.exr"; 
+
+path = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\experiments\MultipleScalings\groundTruth\perms\S005_PermNo_5_ManipnormTexISONormnormTexISONormFinalMultiplicative2.0_rgb.exr"; 
 %% load the ground truth image i.e. pigmentation is GT or perm whatever 
 im = exrread(path);
 
@@ -8,7 +9,7 @@ im = exrread(path);
 % this should be in the files for SD painting -- actually just load uv pass
 % and thresh it
 
-uv = exrread("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\UVPasses\UVSubj000.exr");
+uv = exrread("C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\UVPasses\UVSubj005.exr");
 mask = uv; 
 
 mask(uv>0.5) = 1; % should thresh it
@@ -61,5 +62,5 @@ outIm(~mask3D) = double(im(~mask3D));
 
 figure; imshow(lin2rgb(outIm))
 
-exrwrite(outIm,'PostGreenIm.exr');
+exrwrite(outIm,'PostGreenImS005.exr');
 

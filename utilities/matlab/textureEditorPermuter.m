@@ -125,7 +125,7 @@ rendering.Epth_sampling = Epth_sampling;
 
 rendering.LUTs = LUTs;
 %% subj loop 
-for subj = subjects %subjects
+for subj = subjects' %subjects
     %% load subj data
     rendering.subj_id_string = ['S' num2str(subj, '%03d')];
 
