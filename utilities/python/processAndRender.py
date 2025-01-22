@@ -17,7 +17,7 @@ import csv
 sample = 30; #default but will always round up to a power of 2
 
 
-subjects = [3,5]; #subjects to render -- these are the subjects we are inverse rendering
+subjects = [0,3,5]; #subjects to render -- these are the subjects we are inverse rendering
 #subjects = [0,3,5,7,22]; 
 #subjects =22; 
 

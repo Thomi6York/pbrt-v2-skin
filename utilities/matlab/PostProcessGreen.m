@@ -1,9 +1,11 @@
 %PostGreen 
 %perm 5 is always GT
 
-path = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\pbrt-v2-skin\results\experiments\MultipleScalings\groundTruth\perms\S005_PermNo_5_ManipnormTexISONormnormTexISONormFinalMultiplicative2.0_rgb.exr"; 
+path = "C:\Users\tw1700\OneDrive - University of York\Documents\PhDCore\Experiments\Code\ExpDisplay\XYZIms\S005\linearValuesWPFromFacesOnly\png\S005_XYZ_GT.png"; 
 %% load the ground truth image i.e. pigmentation is GT or perm whatever 
-im = exrread(path);
+%im = exrread(path);
+im = imread(path);
+im = double(im)/255;
 
 %% load its mask 
 % this should be in the files for SD painting -- actually just load uv pass
@@ -62,5 +64,6 @@ outIm(~mask3D) = double(im(~mask3D));
 
 figure; imshow(lin2rgb(outIm))
 
-exrwrite(outIm,'PostGreenImS005.exr');
+%exrwrite(outIm,'PostGreenImS005.exr');
+imwrite(outIm,'CCS005Green.png');
 

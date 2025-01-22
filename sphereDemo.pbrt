@@ -1,5 +1,5 @@
 
-Film "XYZfilm" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "sphere.exr"
+Film "XYZfilm" "integer xresolution" [1280] "integer yresolution" [720] "string filename" "trisphere.exr"
 LookAt 0.491171 -4.4848 0.897406 0 0 0 0 0 1
 Camera "perspective" "float fov" [30] 
 Sampler "lowdiscrepancy" "integer pixelsamples" 1 #changed to 1 for brute render speed`
@@ -52,7 +52,8 @@ AttributeBegin
                         "color Kr" [1 1 1] #specular texture
                         "color Kt" [0 0 0] #translucency        
 
-                        Include "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\scenes\\geometry\\sphere.pbrt"
+                       # Include "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\scenes\\geometry\\sphere.pbrt"
+                       Include "C:\\Users\\tw1700\\OneDrive - University of York\\Documents\\PhDCore\\pbrt-v2-skin\\Triangle_Sphere.pbrt"
 AttributeEnd
 
 WorldEnd
